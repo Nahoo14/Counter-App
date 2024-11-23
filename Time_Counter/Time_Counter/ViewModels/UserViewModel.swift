@@ -9,38 +9,32 @@ import SwiftUI
 import Combine
 
 class UserViewModel: ObservableObject {
-    @Published var timerEntries: [TimerEntry] = []
+    //@Published var timerEntries: [TimerEntry] = []
     @Published var timeEntriesMap : [String : TimerEntry] = [:]
     @Published var newEntryTitle: String = ""
     
-    func startTimer(for index: Int) {
-        timerEntries[index].timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            self.timerEntries[index].elapsedTime += 1
+    func startTimer(for title: String) {
+        timeEntriesMap[title]?.timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            self.timeEntriesMap[title]?.elapsedTime += 1
         }
     }
     
     func addEntry() {
         guard !newEntryTitle.isEmpty else { return }
         let newEntry = TimerEntry(title: newEntryTitle)
-        timerEntries.append(newEntry)
+        timeEntriesMap[newEntryTitle] = newEntry
+        startTimer(for: newEntryTitle) // Start the timer for the new entry
         newEntryTitle = ""
-        startTimer(for: timerEntries.count - 1) // Start the timer for the new entry
     }
 
-    func resetTimer(for index: Int) {
-        print("resetTimer called with index : \(index) timerEntries : \(timerEntries)")
-        if timerEntries.indices.contains(index) {
-            timerEntries[index].elapsedTime = 0 // Reset the elapsed time
-        }
+    func resetTimer(for key: String) {
+        //print("resetTimer called for :", key)
+        timeEntriesMap[key]?.elapsedTime = 0
     }
     
-    // Bug is probably here
-    func deleteEntry(at offsets: IndexSet) {
-        print("deleteEntry called at offset: \(offsets) for timerEntries: \(timerEntries)")
-        for index in offsets {
-            timerEntries[index].timer?.invalidate() // Stop the timer
-        }
-        timerEntries.remove(atOffsets: offsets)
+    func deleteEntry(at key: String) {
+        //print("delete entry called for :", key)
+        timeEntriesMap.removeValue(forKey: key)
     }
 
     func timeString(from timeInterval: TimeInterval) -> String {
@@ -51,9 +45,9 @@ class UserViewModel: ObservableObject {
         return String(format: "%d days, %02d:%02d:%02d", days, hours, minutes, seconds)
     }
     
-    private func startTimers() {
-        for index in timerEntries.indices {
-            startTimer(for: index)
-        }
-    }
+//    func startTimers() {
+//        for index in timerEntries.indices {
+//            startTimer(for: index)
+//        }
+//    }
 }
