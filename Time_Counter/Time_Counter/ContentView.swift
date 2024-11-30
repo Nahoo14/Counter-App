@@ -2,10 +2,18 @@ import SwiftUI
 
 struct ContentView: View {
     
+    /**
+     Features to add
+     2) Theme
+     **/
+    
     @ObservedObject var viewModel: UserViewModel
+    @State private var showConfirmationDialogReset = false
+    @State private var showConfirmationDialogDelete = false
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
+        
         NavigationView {
             VStack {
                 mainTitle
@@ -23,8 +31,14 @@ struct ContentView: View {
                                     .background(Color.gray.opacity(0.2))
                                     .cornerRadius(5)
                                     .onTapGesture{
-                                        viewModel.resetTimer(for: key)
+                                        showConfirmationDialogReset = true
                                     }
+                                    .confirmationDialog("Are you sure you want to reset?", isPresented: $showConfirmationDialogReset, titleVisibility: .visible) {
+                                                    Button("Yes") {
+                                                        viewModel.resetTimer(for: key)
+                                                    }
+                                                    Button("Cancel", role: .cancel) { }
+                                                }
                             }
                             Button(action: {
                             }) {
@@ -32,8 +46,14 @@ struct ContentView: View {
                                     .foregroundColor(.red)
                                     .buttonStyle(BorderlessButtonStyle())
                                     .onTapGesture {
-                                        viewModel.deleteEntry(at: key)
+                                        showConfirmationDialogDelete = true
                                     }
+                                    .confirmationDialog("Are you sure you want to delete the entry?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
+                                                    Button("Yes") {
+                                                        viewModel.deleteEntry(at: key)
+                                                    }
+                                                    Button("Cancel", role: .cancel) { }
+                                                }
                             }
                         }
                     }
