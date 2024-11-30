@@ -28,7 +28,6 @@ class UserViewModel: ObservableObject {
     }
 
     func resetTimer(for key: String) {
-        //print("resetTimer called for :", key)
         timeEntriesMap[key]?.elapsedTime = 0
     }
     

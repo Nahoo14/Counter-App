@@ -10,6 +10,7 @@ struct ContentView: View {
     @ObservedObject var viewModel: UserViewModel
     @State private var showConfirmationDialogReset = false
     @State private var showConfirmationDialogDelete = false
+    @State private var selectedKey: String? = nil
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
@@ -32,10 +33,14 @@ struct ContentView: View {
                                     .cornerRadius(5)
                                     .onTapGesture{
                                         showConfirmationDialogReset = true
+                                        print("Reset pressed for:",key)
+                                        selectedKey = key
                                     }
                                     .confirmationDialog("Are you sure you want to reset?", isPresented: $showConfirmationDialogReset, titleVisibility: .visible) {
                                                     Button("Yes") {
-                                                        viewModel.resetTimer(for: key)
+                                                        if let keyToReset = selectedKey {
+                                                            viewModel.resetTimer(for: keyToReset)
+                                                        }
                                                     }
                                                     Button("Cancel", role: .cancel) { }
                                                 }
@@ -47,10 +52,13 @@ struct ContentView: View {
                                     .buttonStyle(BorderlessButtonStyle())
                                     .onTapGesture {
                                         showConfirmationDialogDelete = true
+                                        selectedKey = key
                                     }
                                     .confirmationDialog("Are you sure you want to delete the entry?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
                                                     Button("Yes") {
-                                                        viewModel.deleteEntry(at: key)
+                                                        if let keyToReset = selectedKey {
+                                                            viewModel.deleteEntry(at: keyToReset)
+                                                        }
                                                     }
                                                     Button("Cancel", role: .cancel) { }
                                                 }
