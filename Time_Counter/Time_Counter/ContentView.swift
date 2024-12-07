@@ -3,14 +3,18 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     Features to add
-     2) Theme
+     Need to fix
+     - Showing time dynamically.
+     - Keep the UI even when the app is closed.
+     - Theme
      **/
     
     @ObservedObject var viewModel: UserViewModel
     @State private var showConfirmationDialogReset = false
     @State private var showConfirmationDialogDelete = false
     @State private var selectedKey: String? = nil
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
@@ -23,6 +27,7 @@ struct ContentView: View {
                         HStack {
                             Text(key)
                             Spacer()
+                            //Text(viewModel.timeString(for: key))
                             Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
                             Button(action: {
                             }) {
@@ -36,7 +41,7 @@ struct ContentView: View {
                                         print("Reset pressed for:",key)
                                         selectedKey = key
                                     }
-                                    .confirmationDialog("Are you sure you want to reset?", isPresented: $showConfirmationDialogReset, titleVisibility: .visible) {
+                                    .confirmationDialog("Are you sure you want to reset \(selectedKey ?? "")?", isPresented: $showConfirmationDialogReset, titleVisibility: .visible) {
                                                     Button("Yes") {
                                                         if let keyToReset = selectedKey {
                                                             viewModel.resetTimer(for: keyToReset)
@@ -54,7 +59,7 @@ struct ContentView: View {
                                         showConfirmationDialogDelete = true
                                         selectedKey = key
                                     }
-                                    .confirmationDialog("Are you sure you want to delete the entry?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
+                                    .confirmationDialog("Are you sure you want to delete \(selectedKey ?? "")?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
                                                     Button("Yes") {
                                                         if let keyToReset = selectedKey {
                                                             viewModel.deleteEntry(at: keyToReset)
@@ -82,7 +87,7 @@ struct ContentView: View {
                     .padding()
                 }
             }
-            //.onAppear(perform: viewModel.startTimers)
+            .onAppear(perform: viewModel.startTimers)
             
         }
     }
