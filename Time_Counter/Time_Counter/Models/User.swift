@@ -13,7 +13,7 @@ import SwiftUI
 struct TimerEntry: Identifiable {
     let id = UUID()
     let title: String
-    var elapsedTime: TimeInterval = 0
     var startTime: Date
+    var elapsedTime: TimeInterval = 0
     var timer: Timer?
 }

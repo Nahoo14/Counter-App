@@ -27,7 +27,6 @@ struct ContentView: View {
                         HStack {
                             Text(key)
                             Spacer()
-                            //Text(viewModel.timeString(for: key))
                             Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
                             Button(action: {
                             }) {
