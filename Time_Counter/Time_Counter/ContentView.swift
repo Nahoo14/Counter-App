@@ -74,20 +74,20 @@ struct ContentView: View {
                     Button(action: viewModel.addEntry) {
                         Text("Start Counter")
                             .padding()
-                            .background(Color.blue)
+                            .background(Color.green)
                             .foregroundColor(.white)
                             .cornerRadius(8)
                     }
                     .padding()
                 }
             }
-            //.onAppear(perform: viewModel.startTimers)
-            
         }
     }
     
     var mainTitle : some View{
-            Text("Counter").font(.largeTitle).bold()
+            Text("Streak Counter")
+                .font(.largeTitle).bold()
+                .cornerRadius(8)
         }
 }
 
