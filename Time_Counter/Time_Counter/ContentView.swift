@@ -3,9 +3,6 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     Need to fix
-     - Showing time dynamically.
-     - Keep the UI even when the app is closed.
      - Theme
      **/
     
@@ -13,9 +10,7 @@ struct ContentView: View {
     @State private var showConfirmationDialogReset = false
     @State private var showConfirmationDialogDelete = false
     @State private var selectedKey: String? = nil
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
-    
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
         
@@ -75,7 +70,7 @@ struct ContentView: View {
                     TextField("Enter counter title", text: $viewModel.newEntryTitle)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
-                    
+                    // Entry added here
                     Button(action: viewModel.addEntry) {
                         Text("Start Counter")
                             .padding()
@@ -86,7 +81,7 @@ struct ContentView: View {
                     .padding()
                 }
             }
-            .onAppear(perform: viewModel.startTimers)
+            //.onAppear(perform: viewModel.startTimers)
             
         }
     }
@@ -96,7 +91,6 @@ struct ContentView: View {
         }
 }
 
-
 let viewModel = UserViewModel()
 
 struct ContentView_Previews: PreviewProvider {
@@ -104,4 +98,3 @@ struct ContentView_Previews: PreviewProvider {
         ContentView(viewModel: viewModel)
     }
 }
-

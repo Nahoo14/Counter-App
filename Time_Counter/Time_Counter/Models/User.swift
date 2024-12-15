@@ -8,12 +8,10 @@
 import SwiftUI
 
 // Model for each timer entry
-// Convert this to a map;
-// {UUID : timerEntry}
-struct TimerEntry: Identifiable {
-    let id = UUID()
+struct TimerEntry : Codable{
     let title: String
     var startTime: Date
     var elapsedTime: TimeInterval = 0
-    var timer: Timer?
 }
+
+
