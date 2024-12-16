@@ -4,6 +4,7 @@ struct ContentView: View {
     
     /**
      - Theme
+     - Fix icon
      **/
     
     @ObservedObject var viewModel: UserViewModel
@@ -67,7 +68,7 @@ struct ContentView: View {
                 }
                 
                 HStack {
-                    TextField("Enter counter title", text: $viewModel.newEntryTitle)
+                    TextField("Enter streak title", text: $viewModel.newEntryTitle)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding()
                     // Entry added here
@@ -87,7 +88,7 @@ struct ContentView: View {
     var mainTitle : some View{
             Text("Streak Counter")
                 .font(.largeTitle).bold()
-                .cornerRadius(8)
+                .padding(.top, 25)
         }
 }
 
