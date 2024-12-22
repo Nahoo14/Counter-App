@@ -3,7 +3,7 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Average data, rules entry and reset reason
+     - Average data, rules entry, goal and reset reason
      - Different font for time and text
      - Fix spacing (bottom and top not even)
      - Hang detection fix
@@ -27,8 +27,11 @@ struct ContentView: View {
                     ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
                         HStack {
                             Text(key)
+                                .font(.custom("Avenir Next", size: 20))
+                                .foregroundColor(.red)
                             Spacer()
                             Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
+                                .font(.system(size: 18, weight: .bold, design: .monospaced))
                             resetButton(for: key)
                             removeButton(for: key)
                         }
@@ -41,9 +44,11 @@ struct ContentView: View {
     
     // mainTitle defines the view for the header text.
     var mainTitle : some View{
-            Text("Streak Counter")
-                .font(.largeTitle).bold()
-                .padding(.top, 25)
+            Text("Streaks")
+            .font(.system(size: 20, weight: .bold))
+            .foregroundColor(.green)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.leading, 25)
     }
     // entryView defines the view for the entry fields.
     var entryView : some View{
