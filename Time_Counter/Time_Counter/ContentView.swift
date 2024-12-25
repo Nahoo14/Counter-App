@@ -4,8 +4,6 @@ struct ContentView: View {
     
     /**
      - Average data, rules entry, goal and reset reason
-     - Different font for time and text
-     - Fix spacing (bottom and top not even)
      - Hang detection fix
      - Theme
      - Fix icon
@@ -15,20 +13,23 @@ struct ContentView: View {
     @ObservedObject var viewModel: UserViewModel
     @State private var showConfirmationDialogReset = false
     @State private var showConfirmationDialogDelete = false
+    @State private var showReasonAlert = false
     @State private var selectedKey: String? = nil
+    @State private var userReason = ""
 
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
         
         NavigationView {
             VStack {
+                Spacer()
                 mainTitle
                 List {
                     ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
                         HStack {
                             Text(key)
-                                .font(.custom("Avenir Next", size: 20))
-                                .foregroundColor(.red)
+                                .font(.system(size: 18, design: .monospaced))
+                            NavigationLink(destination: perItemView(history: timeEntriesMap[key]?.history, viewModel: viewModel)) {}
                             Spacer()
                             Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
                                 .font(.system(size: 18, weight: .bold, design: .monospaced))
@@ -38,6 +39,24 @@ struct ContentView: View {
                     }
                 }
                 entryView
+            }
+        }
+    }
+    
+    // perItemView displays the per counter timer view.
+    struct perItemView: View {
+        var history : [perItemTimerEntry]?
+        var viewModel: UserViewModel
+        var body: some View {
+            List{
+                if !(history?.isEmpty ?? true){
+                    ForEach(history!, id: \.self){ counter in
+                        HStack{
+                            Text("Failure reason : \(counter.resetReason)")
+                            Text("Elapsed Time : \(viewModel.timeString(from: counter.elapsedTime))")
+                        }
+                    }
+                }
             }
         }
     }
@@ -83,14 +102,22 @@ struct ContentView: View {
                 }
                 .confirmationDialog("Are you sure you want to reset \(selectedKey ?? "")?", isPresented: $showConfirmationDialogReset, titleVisibility: .visible) {
                                 Button("Yes") {
-                                    if let keyToReset = selectedKey {
-                                        viewModel.resetTimer(for: keyToReset)
-                                    }
+                                    showReasonAlert = true
                                 }
                                 Button("Cancel", role: .cancel) { }
                             }
+                .alert("Enter Reason", isPresented: $showReasonAlert) {
+                                TextField("Reset reason", text: $userReason)
+                                Button("Submit") {
+                                    if let keyToReset = selectedKey {
+                                        viewModel.resetTimer(for: keyToReset, reason: userReason)
+                                    }
+                                }
+                                Button("Cancel", role: .cancel) {}
+                            }
         }
     }
+    
     // removeCounter defines the view for the remove button.
     func removeButton(for key:String)-> some View{
         return Button(action: {

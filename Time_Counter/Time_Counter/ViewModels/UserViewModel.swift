@@ -61,8 +61,20 @@ class UserViewModel: ObservableObject {
         saveMapData()
     }
 
-    func resetTimer(for key: String) {
-        timeEntriesMap[key]?.startTime = Date()
+    func resetTimer(for key: String, reason: String) {
+        if var entry = timeEntriesMap[key] {
+            let newHistory = perItemTimerEntry(elapsedTime: entry.elapsedTime, resetReason: reason)
+            if entry.history?.isEmpty ?? true {
+                entry.history = [newHistory]
+            } else {
+                entry.history?.append(newHistory)
+            }
+            entry.startTime = Date()
+            timeEntriesMap[key] = entry
+        } else {
+            print("No entry found for key: \(key)")
+        }
+        print("map after adding history", timeEntriesMap)
         saveMapData()
     }
     
@@ -72,7 +84,7 @@ class UserViewModel: ObservableObject {
     }
     
     func timeString(from elapsedTime: TimeInterval) -> String {
-        print("timeEntries map =", timeEntriesMap)
+        // print("timeEntries map =", timeEntriesMap)
         let days = Int(elapsedTime) / 86400
         let hours = (Int(elapsedTime) % 86400) / 3600
         let minutes = (Int(elapsedTime) % 3600) / 60
