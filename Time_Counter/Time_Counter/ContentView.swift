@@ -3,7 +3,8 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Average data, rules entry, goal and reset reason
+     - Start time and end time,
+     - rules entry, goal
      - Hang detection fix
      - Theme
      - Fix icon
@@ -23,13 +24,17 @@ struct ContentView: View {
         NavigationView {
             VStack {
                 Spacer()
-                mainTitle
+                Text("Streaks")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.green)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.leading, 25)
                 List {
                     ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
                         HStack {
                             Text(key)
                                 .font(.system(size: 18, design: .monospaced))
-                            NavigationLink(destination: perItemView(history: timeEntriesMap[key]?.history, viewModel: viewModel)) {}
+                            NavigationLink(destination: perItemView(history: timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {}
                             Spacer()
                             Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
                                 .font(.system(size: 18, weight: .bold, design: .monospaced))
@@ -46,30 +51,26 @@ struct ContentView: View {
     // perItemView displays the per counter timer view.
     struct perItemView: View {
         var history : [perItemTimerEntry]?
-        var viewModel: UserViewModel
+        @ObservedObject var viewModel: UserViewModel
+        var key: String
         var body: some View {
+            Text("History").font(.system(size: 18, weight: .bold))
             List{
-                if !(history?.isEmpty ?? true){
-                    ForEach(history!, id: \.self){ counter in
-                        HStack{
-                            Text("Failure reason : \(counter.resetReason)")
-                            Text("Elapsed Time : \(viewModel.timeString(from: counter.elapsedTime))")
+                let average = viewModel.calculateAverage(for: key)
+                Text("Average: \(viewModel.timeString(from: average)) (per reset)")
+                    if !(history?.isEmpty ?? true){
+                        ForEach(history!, id: \.self){ counter in
+                            Text("Reset reason: ").font(.headline).foregroundColor(.red) +
+                            Text(counter.resetReason).font(.body).foregroundColor(.blue).bold()
+                            Text("Time elapsed: ").font(.headline).foregroundColor(.red) +
+                            Text(viewModel.timeString(from: counter.elapsedTime)).font(.body).foregroundColor(.green).bold()
                         }
                     }
-                }
             }
         }
     }
     
-    // mainTitle defines the view for the header text.
-    var mainTitle : some View{
-            Text("Streaks")
-            .font(.system(size: 20, weight: .bold))
-            .foregroundColor(.green)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 25)
-    }
-    // entryView defines the view for the entry fields.
+    // entryView defines the view for the counter entry fields.
     var entryView : some View{
         HStack {
             TextField("Enter streak title", text: $viewModel.newEntryTitle)
@@ -86,6 +87,7 @@ struct ContentView: View {
             .padding()
         }
     }
+    
     // resetButton defines the view for the reset button.
     func resetButton(for key: String)-> some View{
         return Button(action: {

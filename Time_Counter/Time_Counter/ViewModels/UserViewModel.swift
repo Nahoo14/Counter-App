@@ -41,6 +41,18 @@ class UserViewModel: ObservableObject {
         }
     }
     
+    func calculateAverage(for title: String) -> TimeInterval{
+        let timeEntry = timeEntriesMap[title]
+        var time = (timeEntry?.elapsedTime ?? 0)
+        let historyCount = timeEntry?.history?.count
+        if let history = timeEntry?.history {
+            for entry in history {
+                time += entry.elapsedTime
+            }
+        }
+        return time / Double(historyCount ?? 1)
+    }
+    
     
     func startTimer(for title: String) {
         print("startTimer called for:",title)
@@ -49,12 +61,13 @@ class UserViewModel: ObservableObject {
             let currentTime = Date()
             let startTime = self.timeEntriesMap[title]?.startTime
             self.timeEntriesMap[title]?.elapsedTime = currentTime.timeIntervalSince(startTime!)
+            self.timeEntriesMap[title]?.average = self.calculateAverage(for: title)
         }
     }
     
     func addEntry() {
         guard !newEntryTitle.isEmpty else { return }
-        let newEntry = TimerEntry(title: newEntryTitle, startTime: Date())
+        let newEntry = TimerEntry(title: newEntryTitle, startTime: Date(), average: 0)
         timeEntriesMap[newEntryTitle] = newEntry
         startTimer(for: newEntryTitle) // Start the timer for the new entry
         newEntryTitle = ""
