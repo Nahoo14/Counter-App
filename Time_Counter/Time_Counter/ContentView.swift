@@ -3,7 +3,7 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - rules entry
+     - additional rules view
      - Option to edit description
      - Hang detection fix
      - Theme
@@ -58,7 +58,7 @@ struct ContentView: View {
             let average = viewModel.calculateAverage(for: key)
             Text("Average: ").font(.headline).foregroundColor(.red) +
             Text("\(viewModel.timeString(from: average)) (per reset)").font(.body).foregroundColor(.blue).bold()
-            List{
+                List{
                     if !(history?.isEmpty ?? true){
                         ForEach(history!, id: \.self){ counter in
                             Text("Reset trigger: ").font(.headline).foregroundColor(.red) +
@@ -70,7 +70,24 @@ struct ContentView: View {
                             Spacer()
                         }
                     }
-            }
+                }
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: rulesView()) {
+                            Text("Rules")
+                                .foregroundColor(.blue).bold()
+                        }
+                    }
+                }
+        }
+    }
+    
+    //rulesView defines the view for the per-counter rule entry.
+    struct rulesView : View {
+        var body: some View{
+            Text("Enter rules")
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
         }
     }
     
@@ -112,8 +129,8 @@ struct ContentView: View {
                                 }
                                 Button("Cancel", role: .cancel) { }
                             }
-                .alert("Enter Reason", isPresented: $showReasonAlert) {
-                                TextField("Reset reason", text: $userReason)
+                .alert("Enter Trigger/Reason", isPresented: $showReasonAlert) {
+                                TextField("Reason", text: $userReason)
                                 Button("Submit") {
                                     if let keyToReset = selectedKey {
                                         viewModel.resetTimer(for: keyToReset, reason: userReason)

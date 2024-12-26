@@ -50,7 +50,7 @@ class UserViewModel: ObservableObject {
                 time += entry.elapsedTime
             }
         }
-        return time / Double(historyCount ?? 1)
+        return time / Double(historyCount)
     }
     
     
