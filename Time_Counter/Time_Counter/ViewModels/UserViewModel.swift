@@ -44,7 +44,7 @@ class UserViewModel: ObservableObject {
     func calculateAverage(for title: String) -> TimeInterval{
         let timeEntry = timeEntriesMap[title]
         var time = (timeEntry?.elapsedTime ?? 0)
-        let historyCount = timeEntry?.history?.count
+        let historyCount = (timeEntry?.history?.count ?? 0) + 1
         if let history = timeEntry?.history {
             for entry in history {
                 time += entry.elapsedTime
@@ -76,7 +76,7 @@ class UserViewModel: ObservableObject {
 
     func resetTimer(for key: String, reason: String) {
         if var entry = timeEntriesMap[key] {
-            let newHistory = perItemTimerEntry(elapsedTime: entry.elapsedTime, resetReason: reason)
+            let newHistory = perItemTimerEntry(startTime: entry.startTime, endTime: Date(), elapsedTime: entry.elapsedTime, resetReason: reason)
             if entry.history?.isEmpty ?? true {
                 entry.history = [newHistory]
             } else {

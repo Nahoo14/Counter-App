@@ -17,6 +17,8 @@ struct TimerEntry : Codable{
 }
 
 struct perItemTimerEntry : Codable, Hashable{
+    var startTime : Date
+    var endTime : Date
     var elapsedTime : TimeInterval
     var resetReason : String
 }

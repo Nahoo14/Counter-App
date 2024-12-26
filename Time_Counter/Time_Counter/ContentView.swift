@@ -3,12 +3,11 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Start time and end time,
-     - rules entry, goal
+     - rules entry
+     - Option to edit description
      - Hang detection fix
      - Theme
      - Fix icon
-     - Option to edit description
      **/
     
     @ObservedObject var viewModel: UserViewModel
@@ -54,16 +53,21 @@ struct ContentView: View {
         @ObservedObject var viewModel: UserViewModel
         var key: String
         var body: some View {
-            Text("History").font(.system(size: 18, weight: .bold))
+            Text(key).font(.system(size: 18, weight: .bold))
+            Spacer()
+            let average = viewModel.calculateAverage(for: key)
+            Text("Average: ").font(.headline).foregroundColor(.red) +
+            Text("\(viewModel.timeString(from: average)) (per reset)").font(.body).foregroundColor(.blue).bold()
             List{
-                let average = viewModel.calculateAverage(for: key)
-                Text("Average: \(viewModel.timeString(from: average)) (per reset)")
                     if !(history?.isEmpty ?? true){
                         ForEach(history!, id: \.self){ counter in
-                            Text("Reset reason: ").font(.headline).foregroundColor(.red) +
+                            Text("Reset trigger: ").font(.headline).foregroundColor(.red) +
                             Text(counter.resetReason).font(.body).foregroundColor(.blue).bold()
+                            Text("Duration: ").font(.headline).foregroundColor(.red) +
+                            Text("\(counter.startTime) - \(counter.endTime)")
                             Text("Time elapsed: ").font(.headline).foregroundColor(.red) +
                             Text(viewModel.timeString(from: counter.elapsedTime)).font(.body).foregroundColor(.green).bold()
+                            Spacer()
                         }
                     }
             }
