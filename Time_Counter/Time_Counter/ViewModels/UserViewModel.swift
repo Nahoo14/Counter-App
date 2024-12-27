@@ -110,4 +110,13 @@ class UserViewModel: ObservableObject {
             startTimer(for: key)
         }
     }
+    
+    func addRule(rule : String, for title: String){
+        timeEntriesMap[title]?.rules = rule
+        saveMapData()
+    }
+    
+    func getRules(for key: String) -> String? {
+        return timeEntriesMap[key]?.rules // Return empty string if no rule exists
+    }
 }

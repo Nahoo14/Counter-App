@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - additional rules view
      - Option to edit description
      - Hang detection fix
      - Theme
@@ -16,7 +15,7 @@ struct ContentView: View {
     @State private var showReasonAlert = false
     @State private var selectedKey: String? = nil
     @State private var userReason = ""
-
+    
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
         
@@ -58,36 +57,72 @@ struct ContentView: View {
             let average = viewModel.calculateAverage(for: key)
             Text("Average: ").font(.headline).foregroundColor(.red) +
             Text("\(viewModel.timeString(from: average)) (per reset)").font(.body).foregroundColor(.blue).bold()
-                List{
-                    if !(history?.isEmpty ?? true){
-                        ForEach(history!, id: \.self){ counter in
-                            Text("Reset trigger: ").font(.headline).foregroundColor(.red) +
-                            Text(counter.resetReason).font(.body).foregroundColor(.blue).bold()
-                            Text("Duration: ").font(.headline).foregroundColor(.red) +
-                            Text("\(counter.startTime) - \(counter.endTime)")
-                            Text("Time elapsed: ").font(.headline).foregroundColor(.red) +
-                            Text(viewModel.timeString(from: counter.elapsedTime)).font(.body).foregroundColor(.green).bold()
-                            Spacer()
-                        }
+            List{
+                if !(history?.isEmpty ?? true){
+                    ForEach(history!, id: \.self){ counter in
+                        Text("Reset trigger: ").font(.headline).foregroundColor(.red) +
+                        Text(counter.resetReason).font(.body).foregroundColor(.blue).bold()
+                        Text("Duration: ").font(.headline).foregroundColor(.red) +
+                        Text("\(counter.startTime) - \(counter.endTime)")
+                        Text("Time elapsed: ").font(.headline).foregroundColor(.red) +
+                        Text(viewModel.timeString(from: counter.elapsedTime)).font(.body).foregroundColor(.green).bold()
+                        Spacer()
                     }
                 }
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        NavigationLink(destination: rulesView()) {
-                            Text("Rules")
-                                .foregroundColor(.blue).bold()
-                        }
+            }
+            // Navigate to the rules view.
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: rulesView(viewModel: viewModel, key: key)) {
+                        Text("Rules")
+                            .foregroundColor(.blue).bold()
                     }
                 }
+            }
         }
     }
     
     //rulesView defines the view for the per-counter rule entry.
     struct rulesView : View {
+        @ObservedObject var viewModel: UserViewModel
+        @State private var isEditing: Bool = false
+        @State var rules: String = ""
+        var key: String
+        
+        init(viewModel: UserViewModel, key: String) {
+                self.viewModel = viewModel
+                self.key = key
+                _rules = State(initialValue: viewModel.getRules(for: key) ?? "") // Initialize with existing rule
+        }
+        
         var body: some View{
-            Text("Enter rules")
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
+            VStack(alignment: .leading, spacing: 16) {
+                TextEditor(text: $rules)
+                    .frame(minHeight: 200)
+                    .padding()
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color.gray.opacity(0.5), lineWidth: 1)
+                    )
+                    .font(.body)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Button(action: {
+                    viewModel.addRule(rule: rules, for: key)
+                }) {
+                    Text("Save")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(8)
+                }
+                .padding(.horizontal)
+            }
+            .padding()
+            .navigationTitle("Rules for \(key)")
         }
     }
     
@@ -124,20 +159,20 @@ struct ContentView: View {
                     selectedKey = key
                 }
                 .confirmationDialog("Are you sure you want to reset \(selectedKey ?? "")?", isPresented: $showConfirmationDialogReset, titleVisibility: .visible) {
-                                Button("Yes") {
-                                    showReasonAlert = true
-                                }
-                                Button("Cancel", role: .cancel) { }
-                            }
+                    Button("Yes") {
+                        showReasonAlert = true
+                    }
+                    Button("Cancel", role: .cancel) { }
+                }
                 .alert("Enter Trigger/Reason", isPresented: $showReasonAlert) {
-                                TextField("Reason", text: $userReason)
-                                Button("Submit") {
-                                    if let keyToReset = selectedKey {
-                                        viewModel.resetTimer(for: keyToReset, reason: userReason)
-                                    }
-                                }
-                                Button("Cancel", role: .cancel) {}
-                            }
+                    TextField("Reason", text: $userReason)
+                    Button("Submit") {
+                        if let keyToReset = selectedKey {
+                            viewModel.resetTimer(for: keyToReset, reason: userReason)
+                        }
+                    }
+                    Button("Cancel", role: .cancel) {}
+                }
         }
     }
     
@@ -153,13 +188,13 @@ struct ContentView: View {
                     selectedKey = key
                 }
                 .confirmationDialog("Are you sure you want to delete \(selectedKey ?? "")?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
-                                Button("Yes") {
-                                    if let keyToReset = selectedKey {
-                                        viewModel.deleteEntry(at: keyToReset)
-                                    }
-                                }
-                                Button("Cancel", role: .cancel) { }
-                            }
+                    Button("Yes") {
+                        if let keyToReset = selectedKey {
+                            viewModel.deleteEntry(at: keyToReset)
+                        }
+                    }
+                    Button("Cancel", role: .cancel) { }
+                }
         }
     }
 }
