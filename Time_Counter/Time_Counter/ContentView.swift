@@ -3,10 +3,11 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Option to edit description
-     - Hang detection fix
-     - Theme
      - Fix icon
+     - Fix streak name format
+     - Rules first, then history
+     - Save confirmation, 
+     - Theme
      **/
     
     @ObservedObject var viewModel: UserViewModel
@@ -82,7 +83,7 @@ struct ContentView: View {
         }
     }
     
-    //rulesView defines the view for the per-counter rule entry.
+    // rulesView defines the view for the per-counter rule entry.
     struct rulesView : View {
         @ObservedObject var viewModel: UserViewModel
         @State private var isEditing: Bool = false
@@ -90,9 +91,9 @@ struct ContentView: View {
         var key: String
         
         init(viewModel: UserViewModel, key: String) {
-                self.viewModel = viewModel
-                self.key = key
-                _rules = State(initialValue: viewModel.getRules(for: key) ?? "") // Initialize with existing rule
+            self.viewModel = viewModel
+            self.key = key
+            _rules = State(initialValue: viewModel.getRules(for: key) ?? "") // Initialize with existing rule
         }
         
         var body: some View{
