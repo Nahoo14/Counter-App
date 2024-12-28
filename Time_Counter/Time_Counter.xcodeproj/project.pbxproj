@@ -29,22 +29,9 @@
 		892F80122CCDB39300FF22D0 /* Time_CounterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Time_CounterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		893DC9852D1F391A00EE1B33 /* Exceptions for "Time_Counter" folder in "Time_Counter" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				"Time-Counter-Info.plist",
-			);
-			target = 892F7FF72CCDB39100FF22D0 /* Time_Counter */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
-
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		892F7FFA2CCDB39100FF22D0 /* Time_Counter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				893DC9852D1F391A00EE1B33 /* Exceptions for "Time_Counter" folder in "Time_Counter" target */,
-			);
 			path = Time_Counter;
 			sourceTree = "<group>";
 		};

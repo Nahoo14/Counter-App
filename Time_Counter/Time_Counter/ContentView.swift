@@ -3,10 +3,8 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Fix icon
      - Fix streak name format
-     - Rules first, then history
-     - Save confirmation, 
+     - Save confirmation,
      - Theme
      **/
     
@@ -33,7 +31,8 @@ struct ContentView: View {
                         HStack {
                             Text(key)
                                 .font(.system(size: 18, design: .monospaced))
-                            NavigationLink(destination: perItemView(history: timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {}
+                            //NavigationLink(destination: perItemView(history: timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {}
+                            NavigationLink(destination: rulesView(viewModel: viewModel, key: key)) {}
                             Spacer()
                             Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
                                 .font(.system(size: 18, weight: .bold, design: .monospaced))
@@ -48,7 +47,7 @@ struct ContentView: View {
     }
     
     // perItemView displays the per counter timer view.
-    struct perItemView: View {
+    struct historicalView: View {
         var history : [perItemTimerEntry]?
         @ObservedObject var viewModel: UserViewModel
         var key: String
@@ -68,15 +67,6 @@ struct ContentView: View {
                         Text("Time elapsed: ").font(.headline).foregroundColor(.red) +
                         Text(viewModel.timeString(from: counter.elapsedTime)).font(.body).foregroundColor(.green).bold()
                         Spacer()
-                    }
-                }
-            }
-            // Navigate to the rules view.
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: rulesView(viewModel: viewModel, key: key)) {
-                        Text("Rules")
-                            .foregroundColor(.blue).bold()
                     }
                 }
             }
@@ -124,6 +114,15 @@ struct ContentView: View {
             }
             .padding()
             .navigationTitle("Rules for \(key)")
+            // Navigate to the per item view.
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: historicalView(history: viewModel.timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {
+                        Text("History")
+                            .foregroundColor(.blue).bold()
+                    }
+                }
+            }
         }
     }
     
