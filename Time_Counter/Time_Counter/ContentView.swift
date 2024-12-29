@@ -3,9 +3,10 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Fix streak name format
      - Save confirmation,
+     - Enter rules with new entry
      - Theme
+     - Daily review reminder
      **/
     
     @ObservedObject var viewModel: UserViewModel
@@ -30,12 +31,12 @@ struct ContentView: View {
                     ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
                         HStack {
                             Text(key)
-                                .font(.system(size: 18, design: .monospaced))
-                            //NavigationLink(destination: perItemView(history: timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {}
-                            NavigationLink(destination: rulesView(viewModel: viewModel, key: key)) {}
-                            Spacer()
+                                .font(.system(size: 15, weight: .bold, design: .monospaced))
+                                .foregroundColor(.blue)
+                            NavigationLink(destination: rulesView(viewModel: viewModel, key: key)) {
+                            }
                             Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
-                                .font(.system(size: 18, weight: .bold, design: .monospaced))
+                                .font(.system(size: 15, weight: .bold, design: .monospaced))
                             resetButton(for: key)
                             removeButton(for: key)
                         }
@@ -58,16 +59,36 @@ struct ContentView: View {
             Text("Average: ").font(.headline).foregroundColor(.red) +
             Text("\(viewModel.timeString(from: average)) (per reset)").font(.body).foregroundColor(.blue).bold()
             List{
-                if !(history?.isEmpty ?? true){
-                    ForEach(history!, id: \.self){ counter in
-                        Text("Reset trigger: ").font(.headline).foregroundColor(.red) +
-                        Text(counter.resetReason).font(.body).foregroundColor(.blue).bold()
-                        Text("Duration: ").font(.headline).foregroundColor(.red) +
-                        Text("\(counter.startTime) - \(counter.endTime)")
-                        Text("Time elapsed: ").font(.headline).foregroundColor(.red) +
-                        Text(viewModel.timeString(from: counter.elapsedTime)).font(.body).foregroundColor(.green).bold()
+                if let history = history, !history.isEmpty {
+                    ForEach(Array(history.enumerated()), id: \.1) { index, item in
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Reset trigger - \(index + 1): ")
+                                .font(.headline)
+                                .foregroundColor(.red) +
+                            Text(item.resetReason)
+                                .font(.body)
+                                .foregroundColor(.blue)
+                                .bold()
+                            
+                            Text("Duration: ")
+                                .font(.headline)
+                                .foregroundColor(.red) +
+                            Text("\(item.startTime) - \(item.endTime)")
+                            
+                            Text("Time elapsed: ")
+                                .font(.headline)
+                                .foregroundColor(.red) +
+                            Text(viewModel.timeString(from: item.elapsedTime))
+                                .font(.body)
+                                .foregroundColor(.green)
+                                .bold()
+                        }
                         Spacer()
                     }
+                }
+                else{
+                    Text("No history available")
+                        .foregroundColor(.gray)
                 }
             }
         }
