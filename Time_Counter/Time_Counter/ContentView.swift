@@ -3,7 +3,7 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Save confirmation,
+     - Theme
      - Enter rules with new entry
      - Theme
      - Daily review reminder
@@ -83,7 +83,10 @@ struct ContentView: View {
                                 .foregroundColor(.green)
                                 .bold()
                         }
-                        Spacer()
+                        .background(
+                            RoundedRectangle(cornerRadius: 2)
+                                .stroke(Color.gray, lineWidth: 0.5)
+                        )
                     }
                 }
                 else{
@@ -99,6 +102,7 @@ struct ContentView: View {
         @ObservedObject var viewModel: UserViewModel
         @State private var isEditing: Bool = false
         @State var rules: String = ""
+        @State private var showConfirmation = false
         var key: String
         
         init(viewModel: UserViewModel, key: String) {
@@ -123,6 +127,7 @@ struct ContentView: View {
                 
                 Button(action: {
                     viewModel.addRule(rule: rules, for: key)
+                    showConfirmation = true
                 }) {
                     Text("Save")
                         .frame(maxWidth: .infinity)
@@ -131,7 +136,13 @@ struct ContentView: View {
                         .foregroundColor(.white)
                         .cornerRadius(8)
                 }
-                .padding(.horizontal)
+                .alert(isPresented: $showConfirmation) { // Show the alert
+                    Alert(
+                        title: Text("Success"),
+                        message: Text("Rule saved successfully!"),
+                        dismissButton: .default(Text("OK"))
+                    )
+                }
             }
             .padding()
             .navigationTitle("Rules for \(key)")
