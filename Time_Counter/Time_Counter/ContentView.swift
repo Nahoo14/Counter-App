@@ -20,11 +20,13 @@ struct ContentView: View {
         let timeEntriesMap = viewModel.timeEntriesMap
         
         NavigationView {
+            
             VStack {
                 Spacer()
                 Text("Streaks")
+                    .background(.black)
+                    .foregroundColor(.white)
                     .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.green)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 25)
                 List {
@@ -42,8 +44,24 @@ struct ContentView: View {
                         }
                     }
                 }
+                .scrollContentBackground(.hidden)
                 entryView
             }
+            .background(
+                Image("Climbing_man_1")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea(edges: .all)
+            )
+        }
+    }
+    
+    struct TestView: View {
+        var body: some View {
+            Image("climbing_man_1")
+                .resizable()
+                .scaledToFill()
+                .edgesIgnoringSafeArea(.all)
         }
     }
     
