@@ -5,7 +5,6 @@ struct ContentView: View {
     /**
      - Theme
      - Enter rules with new entry
-     - Theme
      - Daily review reminder
      **/
     
@@ -24,9 +23,8 @@ struct ContentView: View {
             VStack {
                 Spacer()
                 Text("Streaks")
-                    .background(.black)
                     .foregroundColor(.white)
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.system(size: 25, weight: .bold))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 25)
                 List {
@@ -48,20 +46,11 @@ struct ContentView: View {
                 entryView
             }
             .background(
-                Image("Climbing_man_1")
+                Image("Front")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea(edges: .all)
             )
-        }
-    }
-    
-    struct TestView: View {
-        var body: some View {
-            Image("climbing_man_1")
-                .resizable()
-                .scaledToFill()
-                .edgesIgnoringSafeArea(.all)
         }
     }
     
@@ -71,50 +60,75 @@ struct ContentView: View {
         @ObservedObject var viewModel: UserViewModel
         var key: String
         var body: some View {
-            Text(key).font(.system(size: 18, weight: .bold))
-            Spacer()
-            let average = viewModel.calculateAverage(for: key)
-            Text("Average: ").font(.headline).foregroundColor(.red) +
-            Text("\(viewModel.timeString(from: average)) (per reset)").font(.body).foregroundColor(.blue).bold()
-            List{
-                if let history = history, !history.isEmpty {
-                    ForEach(Array(history.enumerated()), id: \.1) { index, item in
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Reset trigger - \(index + 1): ")
-                                .font(.headline)
-                                .foregroundColor(.red) +
-                            Text(item.resetReason)
-                                .font(.body)
-                                .foregroundColor(.blue)
-                                .bold()
-                            
-                            Text("Duration: ")
-                                .font(.headline)
-                                .foregroundColor(.red) +
-                            Text("\(item.startTime) - \(item.endTime)")
-                            
-                            Text("Time elapsed: ")
-                                .font(.headline)
-                                .foregroundColor(.red) +
-                            Text(viewModel.timeString(from: item.elapsedTime))
-                                .font(.body)
-                                .foregroundColor(.green)
-                                .bold()
+            VStack{
+                Text(key).font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.white)
+                    .background(
+                        RoundedRectangle(cornerRadius: 5)
+                            .fill(Color.black.opacity(0.9))
+                    )
+                Spacer()
+                let average = viewModel.calculateAverage(for: key)
+                HStack{
+                    Text("Average: ").font(.headline).foregroundColor(.red)
+                    Text("\(viewModel.timeString(from: average)) (per reset)").font(.body).foregroundColor(.white).bold()
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(Color.black.opacity(0.9))
+                )
+                List{
+                    if let history = history, !history.isEmpty {
+                        ForEach(Array(history.enumerated()), id: \.1) { index, item in
+                            VStack(alignment: .leading, spacing: 10) {
+                                Text("Reset reason - \(index + 1): ")
+                                    .font(.headline)
+                                    .foregroundColor(.red) +
+                                Text(item.resetReason)
+                                    .font(.body)
+                                    .foregroundColor(.blue)
+                                    .bold()
+                                
+                                Text("Duration: ")
+                                    .font(.headline)
+                                    .foregroundColor(.red) +
+                                Text("\(item.startTime) - \(item.endTime)")
+                                
+                                Text("Time elapsed: ")
+                                    .font(.headline)
+                                    .foregroundColor(.red) +
+                                Text(viewModel.timeString(from: item.elapsedTime))
+                                    .font(.body)
+                                    .foregroundColor(.green)
+                                    .bold()
+                            }
+                            .background(
+                                Color.black.opacity(0.1)
+                            )
                         }
-                        .background(
-                            RoundedRectangle(cornerRadius: 2)
-                                .stroke(Color.gray, lineWidth: 0.5)
-                        )
+                    }
+                    else{
+                        Text("No history available")
+                            .foregroundColor(.gray)
                     }
                 }
-                else{
-                    Text("No history available")
-                        .foregroundColor(.gray)
-                }
+                .background(
+                    Color.black.opacity(0.1)
+                )
             }
+            .scrollContentBackground(.hidden)
+            .background(
+                Image("Front")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea(edges: .all)
+                    .overlay(
+                        Color.black.opacity(0.8) // Semi-transparent overlay
+                    )
+            )
         }
     }
-    
+                
     // rulesView defines the view for the per-counter rule entry.
     struct rulesView : View {
         @ObservedObject var viewModel: UserViewModel
@@ -162,7 +176,6 @@ struct ContentView: View {
                     )
                 }
             }
-            .padding()
             .navigationTitle("Rules for \(key)")
             // Navigate to the per item view.
             .toolbar {
@@ -214,7 +227,7 @@ struct ContentView: View {
                     }
                     Button("Cancel", role: .cancel) { }
                 }
-                .alert("Enter Trigger/Reason", isPresented: $showReasonAlert) {
+                .alert("Enter Reason", isPresented: $showReasonAlert) {
                     TextField("Reason", text: $userReason)
                     Button("Submit") {
                         if let keyToReset = selectedKey {
