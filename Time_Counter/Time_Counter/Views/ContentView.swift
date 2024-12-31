@@ -60,24 +60,34 @@ struct ContentView: View {
         @ObservedObject var viewModel: UserViewModel
         var key: String
         var body: some View {
-            VStack{
-                Text(key).font(.system(size: 20, weight: .bold))
+            VStack {
+                Text(key)
+                    .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.white)
+                    .padding(8)
                     .background(
                         RoundedRectangle(cornerRadius: 5)
                             .fill(Color.black.opacity(0.9))
                     )
                 Spacer()
+
                 let average = viewModel.calculateAverage(for: key)
-                HStack{
-                    Text("Average: ").font(.headline).foregroundColor(.red)
-                    Text("\(viewModel.timeString(from: average)) (per reset)").font(.body).foregroundColor(.white).bold()
+                HStack {
+                    Text("Average: ")
+                        .font(.headline)
+                        .foregroundColor(.red)
+                    Text("\(viewModel.timeString(from: average)) (per reset)")
+                        .font(.body)
+                        .foregroundColor(.white)
+                        .bold()
                 }
+                .padding(8)
                 .background(
                     RoundedRectangle(cornerRadius: 5)
                         .fill(Color.black.opacity(0.9))
                 )
-                List{
+
+                List {
                     if let history = history, !history.isEmpty {
                         ForEach(Array(history.enumerated()), id: \.1) { index, item in
                             VStack(alignment: .leading, spacing: 10) {
@@ -88,12 +98,12 @@ struct ContentView: View {
                                     .font(.body)
                                     .foregroundColor(.blue)
                                     .bold()
-                                
+
                                 Text("Duration: ")
                                     .font(.headline)
                                     .foregroundColor(.red) +
                                 Text("\(item.startTime) - \(item.endTime)")
-                                
+
                                 Text("Time elapsed: ")
                                     .font(.headline)
                                     .foregroundColor(.red) +
@@ -102,28 +112,27 @@ struct ContentView: View {
                                     .foregroundColor(.green)
                                     .bold()
                             }
+                            .padding(10)
                             .background(
-                                Color.black.opacity(0.1)
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color.black.opacity(0.1)) // Darker background for contrast
                             )
+                            .listRowInsets(EdgeInsets(top: 5, leading: 5, bottom: 0, trailing: 0)) // Custom insets for better spacing
                         }
-                    }
-                    else{
+                    } else {
                         Text("No history available")
                             .foregroundColor(.gray)
                     }
                 }
-                .background(
-                    Color.black.opacity(0.1)
-                )
+                .scrollContentBackground(.hidden) // Remove the default list background
             }
-            .scrollContentBackground(.hidden)
             .background(
                 Image("Front")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea(edges: .all)
                     .overlay(
-                        Color.black.opacity(0.8) // Semi-transparent overlay
+                        Color.black.opacity(0.8) // Dark overlay to improve visibility
                     )
             )
         }
