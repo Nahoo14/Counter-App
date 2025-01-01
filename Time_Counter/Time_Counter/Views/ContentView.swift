@@ -3,8 +3,9 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Theme
-     - Enter rules with new entry
+     - Get to the bottom of the UI problems in Historical view.
+     - IPAD view issue
+     - Add a background for the rules view.
      - Daily review reminder
      **/
     
@@ -14,6 +15,9 @@ struct ContentView: View {
     @State private var showReasonAlert = false
     @State private var selectedKey: String? = nil
     @State private var userReason = ""
+    @State var showRulesEntry = false
+    @State var newEntryTitle = ""
+    @State var rules = ""
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
@@ -54,6 +58,41 @@ struct ContentView: View {
         }
     }
     
+    // entryView defines the view for the counter entry fields.
+    var entryView : some View{
+        return HStack {
+            TextField("Enter streak title", text: $newEntryTitle)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+            // Entry added here
+            // viewModel.addEntry
+            Button(action: {
+                print("Start counter pressed with text: \(newEntryTitle)")
+                showRulesEntry = true
+            }) {
+                Text("Start Counter")
+                    .padding()
+                    .background(Color.green)
+                    .foregroundColor(.white)
+                    .cornerRadius(8)
+            }
+            .alert("Enter rules", isPresented: $showRulesEntry) {
+                TextField("Rules", text: $rules)
+                Button("Submit") {
+                    viewModel.addEntry(newEntryTitle: newEntryTitle)
+                    viewModel.addRule(rule: rules, for: newEntryTitle)
+                    
+                    // Reset states after submission
+                    newEntryTitle = ""
+                    rules = ""
+                    showRulesEntry = false
+                }
+                Button("Cancel", role: .cancel) {}
+            }
+            .padding()
+        }
+    }
+    
     // perItemView displays the per counter timer view.
     struct historicalView: View {
         var history : [perItemTimerEntry]?
@@ -62,13 +101,8 @@ struct ContentView: View {
         var body: some View {
             VStack {
                 Text(key)
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.system(size: 25, weight: .bold, design: .monospaced))
                     .foregroundColor(.white)
-                    .padding(8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 5)
-                            .fill(Color.black.opacity(0.9))
-                    )
                 Spacer()
 
                 let average = viewModel.calculateAverage(for: key)
@@ -82,10 +116,6 @@ struct ContentView: View {
                         .bold()
                 }
                 .padding(8)
-                .background(
-                    RoundedRectangle(cornerRadius: 5)
-                        .fill(Color.black.opacity(0.9))
-                )
 
                 List {
                     if let history = history, !history.isEmpty {
@@ -117,11 +147,11 @@ struct ContentView: View {
                                 RoundedRectangle(cornerRadius: 10)
                                     .fill(Color.black.opacity(0.1)) // Darker background for contrast
                             )
-                            .listRowInsets(EdgeInsets(top: 5, leading: 5, bottom: 0, trailing: 0)) // Custom insets for better spacing
+                            .listRowInsets(EdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 0)) // Custom insets for better spacing
                         }
                     } else {
                         Text("No history available")
-                            .foregroundColor(.gray)
+                            .font(.system(size: 15))
                     }
                 }
                 .scrollContentBackground(.hidden) // Remove the default list background
@@ -132,7 +162,7 @@ struct ContentView: View {
                     .scaledToFill()
                     .ignoresSafeArea(edges: .all)
                     .overlay(
-                        Color.black.opacity(0.8) // Dark overlay to improve visibility
+                        Color.brown.opacity(0.2) // Dark overlay to improve visibility
                     )
             )
         }
@@ -185,7 +215,7 @@ struct ContentView: View {
                     )
                 }
             }
-            .navigationTitle("Rules for \(key)")
+            .navigationTitle("\(key) rules")
             // Navigate to the per item view.
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -195,24 +225,6 @@ struct ContentView: View {
                     }
                 }
             }
-        }
-    }
-    
-    // entryView defines the view for the counter entry fields.
-    var entryView : some View{
-        HStack {
-            TextField("Enter streak title", text: $viewModel.newEntryTitle)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-            // Entry added here
-            Button(action: viewModel.addEntry) {
-                Text("Start Counter")
-                    .padding()
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(8)
-            }
-            .padding()
         }
     }
     
