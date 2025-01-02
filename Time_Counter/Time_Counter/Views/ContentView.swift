@@ -3,9 +3,9 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Add a background for the rules view.
      - Daily review reminder.
      - IPAD view issue.
+     - Manual reset and entry time.
      **/
     
     @ObservedObject var viewModel: UserViewModel
@@ -26,7 +26,7 @@ struct ContentView: View {
             VStack {
                 Spacer()
                 Text("Streaks")
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                     .font(.system(size: 25, weight: .bold))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 25)
@@ -49,7 +49,7 @@ struct ContentView: View {
                 entryView
             }
             .background(
-                Image("Mountain_Water")
+                Image("Road_Mountain")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea(edges: .all)
@@ -162,14 +162,6 @@ struct ContentView: View {
                     }
                     .scrollContentBackground(.hidden) // Remove the default list background
                 }
-                //            .background(
-                //                Image("Back")
-                //                    .resizable()
-                //                    //.scaledToFill()
-                //                    .aspectRatio(contentMode: .fill)
-                //                    //.ignoresSafeArea(edges: .all)
-                //                    .edgesIgnoringSafeArea(.all)
-                //            )
             }
         }
     }
@@ -189,45 +181,47 @@ struct ContentView: View {
         }
         
         var body: some View{
-            VStack(alignment: .leading, spacing: 16) {
-                TextEditor(text: $rules)
-                    .frame(minHeight: 200)
-                    .padding()
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                    )
-                    .font(.body)
-                    .foregroundColor(.primary)
-                
-                Spacer()
-                
-                Button(action: {
-                    viewModel.addRule(rule: rules, for: key)
-                    showConfirmation = true
-                }) {
-                    Text("Save")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundColor(.white)
+            ZStack{
+                Image("Mountain_Water")
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .ignoresSafeArea()
+                    .frame(minWidth: 0, maxWidth: .infinity)
+                VStack(alignment: .leading, spacing: 16) {
+                    TextEditor(text: $rules)
+                        .background(Color.white)
                         .cornerRadius(8)
+                        .padding([.leading, .trailing], 16)
+                    
+                    Spacer()
+                    
+                    Button(action: {
+                        viewModel.addRule(rule: rules, for: key)
+                        showConfirmation = true
+                    }) {
+                        Text("Save")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(8)
+                    }
+                    .alert(isPresented: $showConfirmation) { // Show the alert
+                        Alert(
+                            title: Text("Success"),
+                            message: Text("Rule saved successfully!"),
+                            dismissButton: .default(Text("OK"))
+                        )
+                    }
                 }
-                .alert(isPresented: $showConfirmation) { // Show the alert
-                    Alert(
-                        title: Text("Success"),
-                        message: Text("Rule saved successfully!"),
-                        dismissButton: .default(Text("OK"))
-                    )
-                }
-            }
-            .navigationTitle("\(key) rules")
-            // Navigate to the per item view.
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    NavigationLink(destination: historicalView(history: viewModel.timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {
-                        Text("History")
-                            .foregroundColor(.blue).bold()
+                .navigationTitle("\(key) rules")
+                // Navigate to the per item view.
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: historicalView(history: viewModel.timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {
+                            Text("History")
+                                .foregroundColor(.blue).bold()
+                        }
                     }
                 }
             }
