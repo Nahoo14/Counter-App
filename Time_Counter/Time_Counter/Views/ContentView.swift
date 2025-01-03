@@ -182,7 +182,7 @@ struct ContentView: View {
         
         var body: some View{
             ZStack{
-                Image("Mountain_Water")
+                Image("Water_Fall")
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .ignoresSafeArea()
@@ -214,7 +214,7 @@ struct ContentView: View {
                         )
                     }
                 }
-                .navigationTitle("\(key) rules")
+                .navigationTitle("notes")
                 // Navigate to the per item view.
                 .toolbar {
                     ToolbarItem(placement: .navigationBarTrailing) {
@@ -223,6 +223,12 @@ struct ContentView: View {
                                 .foregroundColor(.blue).bold()
                         }
                     }
+                    ToolbarItem(placement: .principal) {
+                        Text("\(key) rules/notes")
+                            .font(.headline)
+                            .foregroundColor(.red)
+                    }
+
                 }
             }
         }
