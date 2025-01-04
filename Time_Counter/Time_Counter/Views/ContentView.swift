@@ -3,9 +3,9 @@ import SwiftUI
 struct ContentView: View {
     
     /**
+     - Disappear keyboard when save is pressed
      - Daily review reminder.
-     - IPAD view issue.
-     - Manual reset and entry time.
+     - Test on IPAD.
      **/
     
     @ObservedObject var viewModel: UserViewModel
@@ -25,7 +25,7 @@ struct ContentView: View {
             
             VStack {
                 Spacer()
-                Text("Streaks")
+                Text("Vows")
                     .foregroundColor(.black)
                     .font(.system(size: 25, weight: .bold))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -55,6 +55,7 @@ struct ContentView: View {
                     .ignoresSafeArea(edges: .all)
             )
         }
+        .navigationViewStyle(StackNavigationViewStyle())
     }
     
     // entryView defines the view for the counter entry fields.
@@ -75,7 +76,7 @@ struct ContentView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }
-            .alert("Enter rules", isPresented: $showRulesEntry) {
+            .alert("Enter notes/rules", isPresented: $showRulesEntry) {
                 TextField("Rules", text: $rules)
                 Button("Submit") {
                     viewModel.addEntry(newEntryTitle: newEntryTitle)
@@ -85,6 +86,7 @@ struct ContentView: View {
                     newEntryTitle = ""
                     rules = ""
                     showRulesEntry = false
+                    UIApplication.shared.endEditing()
                 }
                 Button("Cancel", role: .cancel) {}
             }
@@ -162,6 +164,12 @@ struct ContentView: View {
                     }
                     .scrollContentBackground(.hidden) // Remove the default list background
                 }
+                .background(
+                    Image("Rainier")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea(edges: .all)
+                )
             }
         }
     }
@@ -171,7 +179,6 @@ struct ContentView: View {
         @ObservedObject var viewModel: UserViewModel
         @State private var isEditing: Bool = false
         @State var rules: String = ""
-        @State private var showConfirmation = false
         var key: String
         
         init(viewModel: UserViewModel, key: String) {
@@ -181,12 +188,6 @@ struct ContentView: View {
         }
         
         var body: some View{
-            ZStack{
-                Image("Water_Fall")
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .ignoresSafeArea()
-                    .frame(minWidth: 0, maxWidth: .infinity)
                 VStack(alignment: .leading, spacing: 16) {
                     TextEditor(text: $rules)
                         .background(Color.white)
@@ -197,7 +198,7 @@ struct ContentView: View {
                     
                     Button(action: {
                         viewModel.addRule(rule: rules, for: key)
-                        showConfirmation = true
+                        UIApplication.shared.endEditing()
                     }) {
                         Text("Save")
                             .frame(maxWidth: .infinity)
@@ -206,14 +207,13 @@ struct ContentView: View {
                             .foregroundColor(.white)
                             .cornerRadius(8)
                     }
-                    .alert(isPresented: $showConfirmation) { // Show the alert
-                        Alert(
-                            title: Text("Success"),
-                            message: Text("Rule saved successfully!"),
-                            dismissButton: .default(Text("OK"))
-                        )
-                    }
                 }
+                .background(
+                    Image("Water_Fall")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea(edges: .all)
+                )
                 .navigationTitle("notes")
                 // Navigate to the per item view.
                 .toolbar {
@@ -224,13 +224,12 @@ struct ContentView: View {
                         }
                     }
                     ToolbarItem(placement: .principal) {
-                        Text("\(key) rules/notes")
+                        Text("\(key) notes/rules")
                             .font(.headline)
                             .foregroundColor(.red)
                     }
 
                 }
-            }
         }
     }
     
