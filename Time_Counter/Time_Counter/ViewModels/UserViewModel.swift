@@ -64,9 +64,9 @@ class UserViewModel: ObservableObject {
         }
     }
     
-    func addEntry(newEntryTitle: String) {
+    func addEntry(newEntryTitle: String, startTime: Date) {
         guard !newEntryTitle.isEmpty else { return }
-        let newEntry = TimerEntry(title: newEntryTitle, startTime: Date(), average: 0)
+        let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime, average: 0)
         timeEntriesMap[newEntryTitle] = newEntry
         startTimer(for: newEntryTitle) // Start the timer for the new entry
         saveMapData()

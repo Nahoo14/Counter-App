@@ -3,7 +3,8 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Disappear keyboard when save is pressed
+     - Manual start time entry
+     - Keyboard load delay
      - Daily review reminder.
      - Test on IPAD.
      **/
@@ -17,6 +18,7 @@ struct ContentView: View {
     @State var showRulesEntry = false
     @State var newEntryTitle = ""
     @State var rules = ""
+    @State var selectedDate: Date = Date()
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
@@ -65,9 +67,7 @@ struct ContentView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
             // Entry added here
-            // viewModel.addEntry
             Button(action: {
-                print("Start counter pressed with text: \(newEntryTitle)")
                 showRulesEntry = true
             }) {
                 Text("Start Counter")
@@ -76,10 +76,18 @@ struct ContentView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }
-            .alert("Enter notes/rules", isPresented: $showRulesEntry) {
-                TextField("Rules", text: $rules)
+            .sheet(isPresented: $showRulesEntry) {
+                VStack{
+                    Text("Enter rules and select start time")
+                        .font(.headline)
+                        .padding()
+                    TextField("Enter Rules", text: $rules)
+                    DatePicker("Select Date", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
+                                .datePickerStyle(WheelDatePickerStyle())
+                }
+
                 Button("Submit") {
-                    viewModel.addEntry(newEntryTitle: newEntryTitle)
+                    viewModel.addEntry(newEntryTitle: newEntryTitle, startTime: selectedDate)
                     viewModel.addRule(rule: rules, for: newEntryTitle)
                     
                     // Reset states after submission
