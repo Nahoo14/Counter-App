@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Manual start time entry
      - Keyboard load delay
      - Daily review reminder.
      - Test on IPAD.
@@ -15,9 +14,12 @@ struct ContentView: View {
     @State private var showReasonAlert = false
     @State private var selectedKey: String? = nil
     @State private var userReason = ""
-    @State var showRulesEntry = false
-    @State var newEntryTitle = ""
     @State var rules = ""
+    
+    // Entry view variables
+    @State var newEntryTitle = ""
+    @State var showRulesEntry = false
+    @State var showDateEntry = false
     @State var selectedDate: Date = Date()
     
     var body: some View {
@@ -68,7 +70,7 @@ struct ContentView: View {
                 .padding()
             // Entry added here
             Button(action: {
-                showRulesEntry = true
+                showDateEntry = true
             }) {
                 Text("Start Counter")
                     .padding()
@@ -76,28 +78,50 @@ struct ContentView: View {
                     .foregroundColor(.white)
                     .cornerRadius(8)
             }
-            .sheet(isPresented: $showRulesEntry) {
+            .sheet(isPresented: $showDateEntry) {
                 VStack{
-                    Text("Enter rules and select start time")
+                    Text("Select start time")
                         .font(.headline)
-                        .padding()
-                    TextField("Enter Rules", text: $rules)
+                        .foregroundColor(.red)
                     DatePicker("Select Date", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
                                 .datePickerStyle(WheelDatePickerStyle())
                 }
-
-                Button("Submit") {
-                    viewModel.addEntry(newEntryTitle: newEntryTitle, startTime: selectedDate)
-                    viewModel.addRule(rule: rules, for: newEntryTitle)
-                    
-                    // Reset states after submission
-                    newEntryTitle = ""
-                    rules = ""
-                    showRulesEntry = false
-                    UIApplication.shared.endEditing()
+                HStack{
+                    Spacer()
+                    Button("Cancel", role: .cancel) {
+                        // exit sheet
+                        showDateEntry = false
+                    }
+                    .buttonStyle(.borderedProminent)
+                    //.tint(.red)
+                    Spacer()
+                    Button("Continue") {
+                        showRulesEntry = true
+                    }
+                    .buttonStyle(.borderedProminent)
+                    Spacer()
                 }
-                Button("Cancel", role: .cancel) {}
+                .alert("Add notes/rules",isPresented: $showRulesEntry){
+                    TextField("rules", text: $rules)
+                    Button("Submit"){
+                        viewModel.addEntry(newEntryTitle: newEntryTitle, startTime: selectedDate)
+                        viewModel.addRule(rule: rules, for: newEntryTitle)
+                        // Reset state
+                        showRulesEntry = false
+                        showDateEntry = false
+                        newEntryTitle = ""
+                        rules = ""
+                        selectedDate = Date()
+                        UIApplication.shared.endEditing()
+                    }
+                    Button("Cancel", role: .cancel) {
+                        showRulesEntry = false
+                        UIApplication.shared.endEditing()
+                    }
+                }
+
             }
+            
             .padding()
         }
     }
