@@ -4,23 +4,13 @@ struct ContentView: View {
     
     /**
      - Keyboard load delay
-     - Daily review reminder.
+     - Uneven history view
      - Test on IPAD.
+     - Daily review reminder.
      **/
     
     @ObservedObject var viewModel: UserViewModel
-    @State private var showConfirmationDialogReset = false
-    @State private var showConfirmationDialogDelete = false
-    @State private var showReasonAlert = false
-    @State private var selectedKey: String? = nil
-    @State private var userReason = ""
-    @State var rules = ""
     
-    // Entry view variables
-    @State var newEntryTitle = ""
-    @State var showRulesEntry = false
-    @State var showDateEntry = false
-    @State var selectedDate: Date = Date()
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
@@ -29,11 +19,11 @@ struct ContentView: View {
             
             VStack {
                 Spacer()
-                Text("Vows")
+                Text("Habits")
                     .foregroundColor(.black)
                     .font(.system(size: 25, weight: .bold))
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 25)
+                    .padding(.leading, 23)
                 List {
                     ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
                         HStack {
@@ -62,6 +52,13 @@ struct ContentView: View {
         .navigationViewStyle(StackNavigationViewStyle())
     }
     
+    // Entry view variables
+    @State var newEntryTitle = ""
+    @State var showRulesEntry = false
+    @State var showDateEntry = false
+    @State var selectedDate: Date = Date()
+    @State var rules = ""
+    
     // entryView defines the view for the counter entry fields.
     var entryView : some View{
         return HStack {
@@ -84,7 +81,7 @@ struct ContentView: View {
                         .font(.headline)
                         .foregroundColor(.red)
                     DatePicker("Select Date", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
-                                .datePickerStyle(WheelDatePickerStyle())
+                        .datePickerStyle(WheelDatePickerStyle())
                 }
                 HStack{
                     Spacer()
@@ -119,7 +116,7 @@ struct ContentView: View {
                         UIApplication.shared.endEditing()
                     }
                 }
-
+                
             }
             
             .padding()
@@ -220,50 +217,57 @@ struct ContentView: View {
         }
         
         var body: some View{
-                VStack(alignment: .leading, spacing: 16) {
-                    TextEditor(text: $rules)
-                        .background(Color.white)
+            VStack(alignment: .leading, spacing: 16) {
+                TextEditor(text: $rules)
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .padding([.leading, .trailing], 16)
+                
+                Spacer()
+                
+                Button(action: {
+                    viewModel.addRule(rule: rules, for: key)
+                    UIApplication.shared.endEditing()
+                }) {
+                    Text("Save")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
                         .cornerRadius(8)
-                        .padding([.leading, .trailing], 16)
-                    
-                    Spacer()
-                    
-                    Button(action: {
-                        viewModel.addRule(rule: rules, for: key)
-                        UIApplication.shared.endEditing()
-                    }) {
-                        Text("Save")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(8)
+                }
+            }
+            .background(
+                Image("Water_Fall")
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea(edges: .all)
+            )
+            .navigationTitle("notes")
+            // Navigate to the per item view.
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    NavigationLink(destination: historicalView(history: viewModel.timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {
+                        Text("History")
+                            .foregroundColor(.blue).bold()
                     }
                 }
-                .background(
-                    Image("Water_Fall")
-                        .resizable()
-                        .scaledToFill()
-                        .ignoresSafeArea(edges: .all)
-                )
-                .navigationTitle("notes")
-                // Navigate to the per item view.
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        NavigationLink(destination: historicalView(history: viewModel.timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {
-                            Text("History")
-                                .foregroundColor(.blue).bold()
-                        }
-                    }
-                    ToolbarItem(placement: .principal) {
-                        Text("\(key) notes/rules")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                    }
-
+                ToolbarItem(placement: .principal) {
+                    Text("\(key) notes/rules")
+                        .font(.headline)
+                        .foregroundColor(.red)
                 }
+                
+            }
         }
     }
+    
+    // resetButton variables
+    @State private var showResetTime = false
+    @State private var showReasonAlert = false
+    @State private var selectedKey: String? = nil
+    @State private var userReason = ""
+    @State private var showErrorAlert = false
     
     // resetButton defines the view for the reset button.
     func resetButton(for key: String)-> some View{
@@ -275,27 +279,63 @@ struct ContentView: View {
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(5)
                 .onTapGesture{
-                    showConfirmationDialogReset = true
+                    showResetTime = true
                     print("Reset pressed for:",key)
                     selectedKey = key
                 }
-                .confirmationDialog("Are you sure you want to reset \(selectedKey ?? "")?", isPresented: $showConfirmationDialogReset, titleVisibility: .visible) {
-                    Button("Yes") {
-                        showReasonAlert = true
+                .sheet(isPresented: $showResetTime) {
+                    VStack{
+                        Text("Select reset time")
+                            .font(.headline)
+                            .foregroundColor(.red)
+                        DatePicker("Select Date", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
+                            .datePickerStyle(WheelDatePickerStyle())
                     }
-                    Button("Cancel", role: .cancel) { }
-                }
-                .alert("Enter Reason", isPresented: $showReasonAlert) {
-                    TextField("Reason", text: $userReason)
-                    Button("Submit") {
-                        if let keyToReset = selectedKey {
-                            viewModel.resetTimer(for: keyToReset, reason: userReason)
+                    HStack{
+                        Spacer()
+                        Button("Cancel", role: .cancel) {
+                            // exit sheet
+                            showResetTime = false
                         }
+                        .buttonStyle(.borderedProminent)
+                        Spacer()
+                        Button("Continue") {
+                            if let entry = viewModel.timeEntriesMap[key],
+                               selectedDate < entry.startTime {
+                                showErrorAlert = true
+                            }
+                            else if selectedDate > Date(){
+                                showErrorAlert = true
+                            }
+                            else{
+                                showReasonAlert = true
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        Spacer()
                     }
-                    Button("Cancel", role: .cancel) {}
+                    // Invalid time alert.
+                    .alert("Error", isPresented: $showErrorAlert) {
+                        Button("OK", role: .cancel) { }
+                    } message: {
+                        Text("Invalid reset time.")
+                    }
+                    .alert("Enter reason",isPresented: $showReasonAlert){
+                        TextField("Reason", text: $userReason)
+                        Button("Submit") {
+                            if let keyToReset = selectedKey {
+                                viewModel.resetTimer(for: keyToReset, reason: userReason, resetTime: selectedDate)
+                                showReasonAlert = false
+                                showResetTime = false
+                            }
+                        }
+                        Button("Cancel", role: .cancel) {}
+                    }
                 }
         }
     }
+    
+    @State private var showConfirmationDialogDelete = false
     
     // removeCounter defines the view for the remove button.
     func removeButton(for key:String)-> some View{

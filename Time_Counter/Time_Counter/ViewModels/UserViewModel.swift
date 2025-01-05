@@ -72,15 +72,15 @@ class UserViewModel: ObservableObject {
         saveMapData()
     }
 
-    func resetTimer(for key: String, reason: String) {
+    func resetTimer(for key: String, reason: String, resetTime: Date) {
         if var entry = timeEntriesMap[key] {
-            let newHistory = perItemTimerEntry(startTime: entry.startTime, endTime: Date(), elapsedTime: entry.elapsedTime, resetReason: reason)
+            let newHistory = perItemTimerEntry(startTime: entry.startTime, endTime: resetTime, elapsedTime: entry.elapsedTime, resetReason: reason)
             if entry.history?.isEmpty ?? true {
                 entry.history = [newHistory]
             } else {
                 entry.history?.append(newHistory)
             }
-            entry.startTime = Date()
+            entry.startTime = resetTime
             timeEntriesMap[key] = entry
         } else {
             print("No entry found for key: \(key)")
