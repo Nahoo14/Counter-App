@@ -3,8 +3,7 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Keyboard load delay
-     - Uneven history view
+     - Keyboard load, time entry delay
      - Test on IPAD.
      - Daily review reminder.
      **/
@@ -180,11 +179,7 @@ struct ContentView: View {
                                         .bold()
                                 }
                                 .padding(10)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.black.opacity(0.1)) // Darker background for contrast
-                                )
-                                .listRowInsets(EdgeInsets(top: 5, leading: 5, bottom: 5, trailing: 5)) // Custom insets for better spacing
+                                .listRowInsets(EdgeInsets())
                             }
                         } else {
                             Text("No history available")
@@ -288,7 +283,7 @@ struct ContentView: View {
                         Text("Select reset time")
                             .font(.headline)
                             .foregroundColor(.red)
-                        DatePicker("Select Date", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
+                        DatePicker("", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
                             .datePickerStyle(WheelDatePickerStyle())
                     }
                     HStack{
@@ -327,6 +322,7 @@ struct ContentView: View {
                                 viewModel.resetTimer(for: keyToReset, reason: userReason, resetTime: selectedDate)
                                 showReasonAlert = false
                                 showResetTime = false
+                                selectedDate = Date()
                             }
                         }
                         Button("Cancel", role: .cancel) {}
