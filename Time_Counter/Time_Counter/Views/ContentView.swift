@@ -213,11 +213,12 @@ struct ContentView: View {
         
         var body: some View{
             VStack(alignment: .leading, spacing: 16) {
-                TextEditor(text: $rules)
-                    .background(Color.white)
+                CustomTextEditor(text: $rules)
+                    .padding([.leading, .trailing], 8)
+                    .background(
+                        Color(UIColor.systemGray6) // Adaptive background color
+                    )
                     .cornerRadius(8)
-                    .padding([.leading, .trailing], 16)
-                
                 Spacer()
                 
                 Button(action: {
