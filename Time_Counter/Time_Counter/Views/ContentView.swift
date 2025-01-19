@@ -18,7 +18,7 @@ struct ContentView: View {
             
             VStack {
                 Spacer()
-                Text("Habits")
+                Text("Streaks")
                     .foregroundColor(.black)
                     .font(.system(size: 25, weight: .bold))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -79,7 +79,7 @@ struct ContentView: View {
                     Text("Select start time")
                         .font(.headline)
                         .foregroundColor(.red)
-                    DatePicker("Select Date", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
+                    DatePicker("", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(WheelDatePickerStyle())
                 }
                 HStack{
@@ -97,7 +97,7 @@ struct ContentView: View {
                     .buttonStyle(.borderedProminent)
                     Spacer()
                 }
-                .alert("Add notes/rules",isPresented: $showRulesEntry){
+                .alert("Add initial notes",isPresented: $showRulesEntry){
                     TextField("rules", text: $rules)
                     Button("Submit"){
                         viewModel.addEntry(newEntryTitle: newEntryTitle, startTime: selectedDate)
@@ -249,7 +249,7 @@ struct ContentView: View {
                     }
                 }
                 ToolbarItem(placement: .principal) {
-                    Text("\(key) notes/rules")
+                    Text("\(key) notes")
                         .font(.headline)
                         .foregroundColor(.red)
                 }
