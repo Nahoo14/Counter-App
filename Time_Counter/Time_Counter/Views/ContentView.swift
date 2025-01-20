@@ -6,7 +6,7 @@ struct ContentView: View {
      - Keyboard load, time entry delay
      - Test on IPAD.
      - Daily review reminder.
-     **/
+    **/
     
     @ObservedObject var viewModel: UserViewModel
     
@@ -15,7 +15,6 @@ struct ContentView: View {
         let timeEntriesMap = viewModel.timeEntriesMap
         
         NavigationView {
-            
             VStack {
                 Spacer()
                 Text("Streaks")
@@ -23,6 +22,9 @@ struct ContentView: View {
                     .font(.system(size: 25, weight: .bold))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 23)
+                    .onTapGesture {
+                        UIApplication.shared.endEditing()
+                    }
                 List {
                     ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
                         HStack {
@@ -36,6 +38,7 @@ struct ContentView: View {
                             resetButton(for: key)
                             removeButton(for: key)
                         }
+                        .contentShape(Rectangle())
                     }
                 }
                 .scrollContentBackground(.hidden)
@@ -46,9 +49,12 @@ struct ContentView: View {
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea(edges: .all)
+                    .onTapGesture {
+                        UIApplication.shared.endEditing()
+                    }
             )
         }
-        .navigationViewStyle(StackNavigationViewStyle())
+        //.navigationViewStyle(StackNavigationViewStyle())
     }
     
     // Entry view variables
@@ -64,6 +70,12 @@ struct ContentView: View {
             TextField("Enter streak title", text: $newEntryTitle)
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding()
+                .textInputAutocapitalization(.never)
+                .disableAutocorrection(true)
+                .animation(.easeInOut(duration: 0.2), value: newEntryTitle)
+                .onAppear {
+                    preloadKeyboard() // Preload keyboard on app start
+                }
             // Entry added here
             Button(action: {
                 showDateEntry = true
@@ -115,7 +127,6 @@ struct ContentView: View {
                         UIApplication.shared.endEditing()
                     }
                 }
-                
             }
             
             .padding()

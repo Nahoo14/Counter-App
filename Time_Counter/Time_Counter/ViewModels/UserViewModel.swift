@@ -8,6 +8,22 @@
 import SwiftUI
 import Combine
 
+extension UIApplication {
+    func endEditing() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+    func hideKeyboard(){
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+
+func preloadKeyboard() {
+    DispatchQueue.global(qos: .background).async {
+        // Simulate interaction
+        _ = ""
+    }
+}
+
 class UserViewModel: ObservableObject {
 
     @Published var timeEntriesMap : [String : TimerEntry] = [:]

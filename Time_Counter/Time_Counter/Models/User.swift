@@ -24,12 +24,6 @@ struct perItemTimerEntry : Codable, Hashable{
     var resetReason : String
 }
 
-extension UIApplication {
-    func endEditing() {
-        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-    }
-}
-
 // MARK: - CustomTextEditor
 struct CustomTextEditor: UIViewRepresentable {
     @Binding var text: String
