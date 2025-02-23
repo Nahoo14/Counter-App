@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Notes header disappeared on dark mode
      - Publish
      - Current time bug
     **/
@@ -287,6 +286,7 @@ struct ContentView: View {
                 ToolbarItem(placement: .principal) {
                     Text("\(key) notes")
                         .font(.headline)
+                        .foregroundColor(.blue)
                 }
                 
             }
@@ -399,7 +399,7 @@ struct ContentView: View {
                     showConfirmationDialogDelete = true
                     selectedKey = key
                 }
-                .confirmationDialog("Are you sure you want to delete \(selectedKey ?? "")?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
+                .confirmationDialog("Are you sure you want to delete \(selectedKey)?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
                     Button("Yes") {
                         viewModel.deleteEntry(at: selectedKey)
                     }
