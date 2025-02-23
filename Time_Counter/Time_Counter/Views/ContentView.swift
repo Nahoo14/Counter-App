@@ -3,9 +3,9 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Keyboard load, time entry delay
-     - Test on IPAD.
-     - Daily review reminder.
+     - Test IPAD
+     - Add longest, with average
+     - Publish
     **/
     
     @ObservedObject var viewModel: UserViewModel
@@ -40,6 +40,20 @@ struct ContentView: View {
                         }
                         .contentShape(Rectangle())
                     }
+                }
+                .fullScreenCover(isPresented: $showResetTime, onDismiss: {
+                    print("showResetTime = \(showResetTime)")
+                    print("Sheet dismissed")
+                }) {
+                    ResetTimeView(
+                        showResetTime: $showResetTime,
+                        selectedDate: $selectedDate,
+                        selectedKey: $selectedKey,
+                        showErrorAlert: $showErrorAlert,
+                        showReasonAlert: $showReasonAlert,
+                        userReason: $userReason,
+                        viewModel: viewModel
+                    )
                 }
                 .scrollContentBackground(.hidden)
                 entryView
@@ -262,7 +276,6 @@ struct ContentView: View {
                 ToolbarItem(placement: .principal) {
                     Text("\(key) notes")
                         .font(.headline)
-                        .foregroundColor(.red)
                 }
                 
             }
@@ -270,14 +283,16 @@ struct ContentView: View {
     }
     
     // resetButton variables
-    @State private var showResetTime = false
+    @State private var showResetTime: Bool = false
     @State private var showReasonAlert = false
-    @State private var selectedKey: String? = nil
+    @State private var selectedKey = ""
     @State private var userReason = ""
     @State private var showErrorAlert = false
+
     
     // resetButton defines the view for the reset button.
     func resetButton(for key: String)-> some View{
+        
         return Button(action: {
         }) {
             Text("Reset")
@@ -287,61 +302,78 @@ struct ContentView: View {
                 .cornerRadius(5)
                 .onTapGesture{
                     showResetTime = true
-                    print("Reset pressed for:",key)
                     selectedKey = key
+                    print("showResetTime = \(showResetTime)")
                 }
-                .sheet(isPresented: $showResetTime) {
-                    VStack{
-                        Text("Select reset time")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                        DatePicker("", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
-                            .datePickerStyle(WheelDatePickerStyle())
+        }
+    }
+    
+    struct ResetTimeView: View {
+        @Binding var showResetTime: Bool
+        @Binding var selectedDate: Date
+        @Binding var selectedKey: String
+        @Binding var showErrorAlert: Bool
+        @Binding var showReasonAlert: Bool
+        @Binding var userReason: String
+        var viewModel: UserViewModel
+
+        var body: some View {
+            VStack(spacing: 20) {
+                Text("Select reset time")
+                    .font(.headline)
+                    .foregroundColor(.red)
+
+                DatePicker("", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
+                    .datePickerStyle(WheelDatePickerStyle())
+                    .padding()
+
+                HStack {
+                    Spacer()
+                    Button("Cancel", role: .cancel) {
+                        showResetTime = false
                     }
-                    HStack{
-                        Spacer()
-                        Button("Cancel", role: .cancel) {
-                            // exit sheet
-                            showResetTime = false
+                    .buttonStyle(.borderedProminent)
+
+                    Spacer()
+
+                    Button("Continue") {
+                        if let entry = viewModel.timeEntriesMap[selectedKey],
+                           selectedDate < entry.startTime {
+                            showErrorAlert = true
+                        } else if selectedDate >= Date() {
+                            showErrorAlert = true
+                        } else {
+                            showReasonAlert = true
                         }
-                        .buttonStyle(.borderedProminent)
-                        Spacer()
-                        Button("Continue") {
-                            if let entry = viewModel.timeEntriesMap[key],
-                               selectedDate < entry.startTime {
-                                showErrorAlert = true
-                            }
-                            else if selectedDate > Date(){
-                                showErrorAlert = true
-                            }
-                            else{
-                                showReasonAlert = true
-                            }
-                        }
-                        .buttonStyle(.borderedProminent)
-                        Spacer()
                     }
-                    // Invalid time alert.
-                    .alert("Error", isPresented: $showErrorAlert) {
-                        Button("OK", role: .cancel) { }
-                    } message: {
-                        Text("Invalid reset time.")
-                    }
-                    .alert("Enter reason",isPresented: $showReasonAlert){
-                        TextField("Reason", text: $userReason)
+                    .buttonStyle(.borderedProminent)
+
+                    Spacer()
+                }
+            }
+            .padding()
+            .alert("Error", isPresented: $showErrorAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text("Invalid reset time.")
+            }
+            .alert("Enter reason", isPresented: $showReasonAlert) {
+                VStack {
+                    TextField("Reason", text: $userReason)
+                    HStack {
                         Button("Submit") {
-                            if let keyToReset = selectedKey {
-                                viewModel.resetTimer(for: keyToReset, reason: userReason, resetTime: selectedDate)
-                                showReasonAlert = false
-                                showResetTime = false
-                                selectedDate = Date()
-                            }
+                            viewModel.resetTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)
+                            showReasonAlert = false
+                            showResetTime = false
+                            selectedDate = Date()
                         }
                         Button("Cancel", role: .cancel) {}
                     }
                 }
+            }
         }
     }
+    
     
     @State private var showConfirmationDialogDelete = false
     
@@ -358,9 +390,7 @@ struct ContentView: View {
                 }
                 .confirmationDialog("Are you sure you want to delete \(selectedKey ?? "")?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
                     Button("Yes") {
-                        if let keyToReset = selectedKey {
-                            viewModel.deleteEntry(at: keyToReset)
-                        }
+                        viewModel.deleteEntry(at: selectedKey)
                     }
                     Button("Cancel", role: .cancel) { }
                 }
