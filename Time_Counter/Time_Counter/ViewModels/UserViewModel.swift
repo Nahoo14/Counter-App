@@ -56,6 +56,7 @@ class UserViewModel: ObservableObject {
         }
     }
     
+    // calculateAverage returns the average time per entry.
     func calculateAverage(for title: String) -> TimeInterval{
         let timeEntry = timeEntriesMap[title]
         var time = (timeEntry?.elapsedTime ?? 0)
@@ -68,6 +69,20 @@ class UserViewModel: ObservableObject {
         return time / Double(historyCount)
     }
     
+    // longestStreak returns the longest streak.
+    func longestStreak(for title: String) -> TimeInterval{
+        let timeEntry = timeEntriesMap[title]
+        var longest = (timeEntry?.elapsedTime ?? 0)
+        if let history = timeEntry?.history {
+            for entry in history {
+                if entry.elapsedTime > longest{
+                    longest = entry.elapsedTime
+                }
+            }
+        }
+        return longest
+    }
+    
     
     func startTimer(for title: String) {
         print("startTimer called for:",title)
@@ -76,13 +91,12 @@ class UserViewModel: ObservableObject {
             let currentTime = Date()
             let startTime = self.timeEntriesMap[title]?.startTime
             self.timeEntriesMap[title]?.elapsedTime = currentTime.timeIntervalSince(startTime!)
-            self.timeEntriesMap[title]?.average = self.calculateAverage(for: title)
         }
     }
     
     func addEntry(newEntryTitle: String, startTime: Date) {
         guard !newEntryTitle.isEmpty else { return }
-        let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime, average: 0)
+        let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime)
         timeEntriesMap[newEntryTitle] = newEntry
         startTimer(for: newEntryTitle) // Start the timer for the new entry
         saveMapData()

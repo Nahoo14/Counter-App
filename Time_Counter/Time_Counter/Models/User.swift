@@ -12,7 +12,6 @@ struct TimerEntry : Codable{
     let title: String
     var startTime: Date
     var elapsedTime: TimeInterval = 0
-    var average: TimeInterval
     var rules: String?
     var history: [perItemTimerEntry]?
 }

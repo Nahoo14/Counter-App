@@ -3,9 +3,9 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Test IPAD
-     - Add longest, with average
+     - Notes header disappeared on dark mode
      - Publish
+     - Current time bug
     **/
     
     @ObservedObject var viewModel: UserViewModel
@@ -68,7 +68,6 @@ struct ContentView: View {
                     }
             )
         }
-        //.navigationViewStyle(StackNavigationViewStyle())
     }
     
     // Entry view variables
@@ -164,14 +163,26 @@ struct ContentView: View {
                         .font(.system(size: 20, weight: .bold, design: .monospaced))
                         .foregroundColor(.white)
                     let average = viewModel.calculateAverage(for: key)
-                    HStack {
-                        Text("Average: ")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                        Text("\(viewModel.timeString(from: average)) (per reset)")
-                            .font(.body)
-                            .foregroundColor(.yellow)
-                            .bold()
+                    let longest = viewModel.longestStreak(for: key)
+                    VStack{
+                        HStack {
+                            Text("Average: ")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                            Text("\(viewModel.timeString(from: average)) (per reset)")
+                                .font(.body)
+                                .foregroundColor(.yellow)
+                                .bold()
+                        }
+                        HStack {
+                            Text("Longest: ")
+                                .font(.headline)
+                                .foregroundColor(.red)
+                            Text(viewModel.timeString(from: longest))
+                                .font(.body)
+                                .foregroundColor(.yellow)
+                                .bold()
+                        }
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 5)
