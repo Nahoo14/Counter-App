@@ -17,10 +17,10 @@ struct ContentView: View {
             VStack {
                 Spacer()
                 Text("Streaks")
-                    .foregroundColor(.black)
+                    .foregroundColor(.white)
                     .font(.system(size: 25, weight: .bold))
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.leading, 23)
+                    .padding(.leading, 25)
                     .onTapGesture {
                         UIApplication.shared.endEditing()
                     }
@@ -58,7 +58,7 @@ struct ContentView: View {
                 entryView
             }
             .background(
-                Image("Road_Mountain")
+                Image("Mountain2")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea(edges: .all)
@@ -286,7 +286,7 @@ struct ContentView: View {
                 ToolbarItem(placement: .principal) {
                     Text("\(key) notes")
                         .font(.headline)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.green)
                 }
                 
             }
