@@ -4,5 +4,10 @@
 <dict>
 	<key>NSCredits</key>
 	<string>ourglass Not Done icon by Icons8: https://icons8.com/icon/A90XZgNDIsOE/hourglass-not-done</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIImageName</key>
+		<string>water_fall</string>
+	</dict>
 </dict>
 </plist>
