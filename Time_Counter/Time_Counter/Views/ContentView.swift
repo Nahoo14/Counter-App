@@ -59,7 +59,7 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(
-                Image("Mountain2")
+                Image("Seed")
                     .resizable()
                     .scaledToFill()
                     .ignoresSafeArea(edges: .all)
@@ -157,7 +157,7 @@ struct ContentView: View {
                     VStack {
                         Text("\(key) history")
                             .font(.system(size: 20, weight: .bold, design: .monospaced))
-                            .foregroundColor(.white)
+                            .foregroundColor(.black)
                         let average = viewModel.calculateAverage(for: key)
                         let longest = viewModel.longestStreak(for: key)
                         let current = viewModel.timeEntriesMap[key]!.elapsedTime
@@ -232,7 +232,7 @@ struct ContentView: View {
                             .scrollContentBackground(.hidden) // Remove the default list background
                     }
                     .background(
-                        Image("Rainier")
+                        Image("Flower")
                             .resizable()
                             .scaledToFill()
                             .ignoresSafeArea(edges: .all)
