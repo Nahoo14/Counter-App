@@ -106,6 +106,7 @@ struct ContentView: View {
                         .foregroundColor(.red)
                     DatePicker("", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(WheelDatePickerStyle())
+                        .frame(width: 200)
                 }
                 HStack{
                     Spacer()
@@ -344,6 +345,7 @@ struct ContentView: View {
                 DatePicker("", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
                     .datePickerStyle(WheelDatePickerStyle())
                     .padding()
+                    .frame(width: 200)
 
                 HStack {
                     Spacer()
