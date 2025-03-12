@@ -4,7 +4,6 @@ struct ContentView: View {
     
     /**
      - Publish
-     - Current time bug
     **/
     
     @ObservedObject var viewModel: UserViewModel

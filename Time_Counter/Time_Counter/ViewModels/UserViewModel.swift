@@ -104,7 +104,7 @@ class UserViewModel: ObservableObject {
 
     func resetTimer(for key: String, reason: String, resetTime: Date) {
         if var entry = timeEntriesMap[key] {
-            let newHistory = perItemTimerEntry(startTime: entry.startTime, endTime: resetTime, elapsedTime: entry.elapsedTime, resetReason: reason)
+            let newHistory = perItemTimerEntry(startTime: entry.startTime, endTime: resetTime, elapsedTime: resetTime.timeIntervalSince(entry.startTime), resetReason: reason)
             if entry.history?.isEmpty ?? true {
                 entry.history = [newHistory]
             } else {
