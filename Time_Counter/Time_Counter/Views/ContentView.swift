@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     - Encrypt
      - Publish
     **/
     
@@ -27,11 +26,12 @@ struct ContentView: View {
                 List {
                     ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
                         HStack {
-                            Text(key)
-                                .font(.system(size: 15, weight: .bold, design: .monospaced))
-                                .foregroundColor(.blue)
                             NavigationLink(destination: rulesView(viewModel: viewModel, key: key)) {
+                                Text(key)
+                                    .font(.system(size: 15, weight: .bold, design: .monospaced))
+                                    .foregroundColor(.blue)
                             }
+                            .buttonStyle(.plain) // Removes the default arrow
                             Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
                                 .font(.system(size: 15, weight: .bold, design: .monospaced))
                             resetButton(for: key)
