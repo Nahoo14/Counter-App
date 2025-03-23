@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Combine
+import CryptoKit
 
 extension UIApplication {
     func endEditing() {
@@ -24,36 +25,100 @@ func preloadKeyboard() {
     }
 }
 
+struct EncryptionManager {
+    private static let keyStoreKey = "encryptionKey"
+    
+    static func getEncryptionKey() -> SymmetricKey {
+        if let keyData = UserDefaults.standard.data(forKey: keyStoreKey) {
+            return SymmetricKey(data: keyData)
+        } else {
+            let newKey = SymmetricKey(size: .bits256)
+            storeEncryptionKey(newKey)
+            return newKey
+        }
+    }
+    
+    private static func storeEncryptionKey(_ key: SymmetricKey) {
+        let keyData = key.withUnsafeBytes { Data($0) }
+        UserDefaults.standard.set(keyData, forKey: keyStoreKey)
+    }
+    
+    static func encryptData(_ data: Data) -> Data? {
+        do {
+            let sealedBox = try AES.GCM.seal(data, using: getEncryptionKey())
+            return sealedBox.combined
+        } catch {
+            print("Encryption failed: \(error)")
+            return nil
+        }
+    }
+    
+    static func decryptData(_ data: Data) -> Data? {
+        do {
+            let sealedBox = try AES.GCM.SealedBox(combined: data)
+            return try AES.GCM.open(sealedBox, using: getEncryptionKey())
+        } catch {
+            print("Decryption failed: \(error)")
+            return nil
+        }
+    }
+}
+
+class DataManager {
+    private let storageKey = "timeMap"
+    var timeEntriesMap: [String: TimerEntry] = [:]
+    
+    func saveMapData() {
+        do {
+            let data = try JSONEncoder().encode(timeEntriesMap)
+            if let encryptedData = EncryptionManager.encryptData(data) {
+                UserDefaults.standard.set(encryptedData, forKey: storageKey)
+                UserDefaults.standard.synchronize()
+            }
+        } catch {
+            print("Failed to save data: \(error)")
+        }
+    }
+    
+    func loadMapData() -> [String: TimerEntry] {
+        do {
+            if let savedData = UserDefaults.standard.data(forKey: storageKey),
+               let decryptedData = EncryptionManager.decryptData(savedData) {
+                let loadedMap = try JSONDecoder().decode([String: TimerEntry].self, from: decryptedData)
+                print("Loaded timeEntriesMap:", loadedMap)
+                return loadedMap
+            }
+        } catch {
+            print("Failed to load data: \(error)")
+        }
+        print("Found nothing stored.")
+        return [:] // Return empty map if loading fails
+    }
+
+}
+
+
 class UserViewModel: ObservableObject {
 
     @Published var timeEntriesMap : [String : TimerEntry] = [:]
     
     private var timer : Timer? = nil
     
+    var Data = DataManager()
+    
     init() {
-        loadMapData()
+        timeEntriesMap = Data.loadMapData()
+        print("UserViewModel initialized. Loaded timeEntriesMap:", timeEntriesMap)
         startTimers()
     }
-        
-    func saveMapData() {
-        do {
-            // Convert the map to Data
-            let data = try JSONEncoder().encode(timeEntriesMap)
-            UserDefaults.standard.set(data, forKey: "timeMap")
-        } catch {
-            print("Failed to save data: \(error)")
-        }
-    }
-        
-    func loadMapData() {
-        do {
-            if let savedData = UserDefaults.standard.data(forKey: "timeMap") {
-                timeEntriesMap = try JSONDecoder().decode([String: TimerEntry].self, from: savedData)
-                print("Loaded timeEntriesMap:", timeEntriesMap)
-            }
-        } catch {
-            print("Failed to load data: \(error)")
-        }
+    
+    func addEntry(newEntryTitle: String, startTime: Date) {
+        guard !newEntryTitle.isEmpty else { return }
+        let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime)
+        timeEntriesMap[newEntryTitle] = newEntry
+        startTimer(for: newEntryTitle) // Start the timer for the new entry
+        Data.timeEntriesMap = timeEntriesMap
+        Data.saveMapData()
     }
     
     // calculateAverage returns the average time per entry.
@@ -93,14 +158,6 @@ class UserViewModel: ObservableObject {
             self.timeEntriesMap[title]?.elapsedTime = currentTime.timeIntervalSince(startTime!)
         }
     }
-    
-    func addEntry(newEntryTitle: String, startTime: Date) {
-        guard !newEntryTitle.isEmpty else { return }
-        let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime)
-        timeEntriesMap[newEntryTitle] = newEntry
-        startTimer(for: newEntryTitle) // Start the timer for the new entry
-        saveMapData()
-    }
 
     func resetTimer(for key: String, reason: String, resetTime: Date) {
         if var entry = timeEntriesMap[key] {
@@ -116,12 +173,14 @@ class UserViewModel: ObservableObject {
             print("No entry found for key: \(key)")
         }
         print("map after adding history", timeEntriesMap)
-        saveMapData()
+        Data.timeEntriesMap = timeEntriesMap
+        Data.saveMapData()
     }
     
     func deleteEntry(at key: String) {
         timeEntriesMap.removeValue(forKey: key)
-        saveMapData()
+        Data.timeEntriesMap = timeEntriesMap
+        Data.saveMapData()
     }
     
     func timeString(from elapsedTime: TimeInterval) -> String {
@@ -141,7 +200,8 @@ class UserViewModel: ObservableObject {
     
     func addRule(rule : String, for title: String){
         timeEntriesMap[title]?.rules = rule
-        saveMapData()
+        Data.timeEntriesMap = timeEntriesMap
+        Data.saveMapData()
     }
     
     func getRules(for key: String) -> String? {
