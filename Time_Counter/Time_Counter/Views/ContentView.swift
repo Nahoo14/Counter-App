@@ -4,18 +4,18 @@ struct ContentView: View {
     
     /**
      * Reset, with start and pause modes
+     * Parent child mode
      * Get Feedback
-     * Settings
+     * Settings section
      * Theme
      * Reminder
-     * Parent child mode
+     * Watch compatibile
     **/
     
     @ObservedObject var viewModel: UserViewModel
     
     
     var body: some View {
-        @State var selectedDate: Date = Date()
         let timeEntriesMap = viewModel.timeEntriesMap
         
         NavigationStack {
@@ -52,7 +52,6 @@ struct ContentView: View {
                 }) {
                     ResetTimeView(
                         showResetTime: $showResetTime,
-                        selectedDate: $selectedDate,
                         selectedKey: $selectedKey,
                         showErrorAlert: $showErrorAlert, 
                         showReasonAlert: $showReasonAlert,
@@ -86,7 +85,23 @@ struct ContentView: View {
     
     // resetButton defines the view for the reset button.
     func resetButton(for key: String)-> some View{
-        
+        let timeEntriesMap = viewModel.timeEntriesMap
+        let isPaused = timeEntriesMap[key]?.isPaused ?? false
+        if isPaused{
+            return Button(action: {
+            }) {
+                Text("Resume")
+                    .foregroundColor(.red)
+                    .padding(5)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(5)
+                    .onTapGesture{
+                        showResetTime = true
+                        selectedKey = key
+                        print("showResetTime = \(showResetTime)")
+                    }
+            }
+        }
         return Button(action: {
         }) {
             Text("Reset")

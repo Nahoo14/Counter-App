@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct ResetTimeView: View {
+    @State var selectedDate: Date = Date()
+    
     @Binding var showResetTime: Bool
-    @Binding var selectedDate: Date
     @Binding var selectedKey: String
     @Binding var showErrorAlert: Bool
     @Binding var showReasonAlert: Bool
@@ -33,9 +34,7 @@ struct ResetTimeView: View {
                     showResetTime = false
                 }
                 .buttonStyle(.borderedProminent)
-
                 Spacer()
-
                 Button("Continue") {
                     if let entry = viewModel.timeEntriesMap[selectedKey],
                        selectedDate < entry.startTime {
@@ -47,7 +46,6 @@ struct ResetTimeView: View {
                     }
                 }
                 .buttonStyle(.borderedProminent)
-
                 Spacer()
             }
         }
@@ -60,9 +58,15 @@ struct ResetTimeView: View {
         .alert("Enter reason", isPresented: $showReasonAlert) {
             VStack {
                 TextField("Reason", text: $userReason)
-                HStack {
+                VStack {
                     Button("Submit") {
                         viewModel.resetTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)
+                        showReasonAlert = false
+                        showResetTime = false
+                        selectedDate = Date()
+                    }
+                    Button("Submit and suspend."){
+                        viewModel.resetAndPauseTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)
                         showReasonAlert = false
                         showResetTime = false
                         selectedDate = Date()

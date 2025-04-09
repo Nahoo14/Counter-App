@@ -112,6 +112,11 @@ class UserViewModel: ObservableObject {
         startTimers()
     }
     
+    func saveData(){
+        Data.timeEntriesMap = timeEntriesMap
+        Data.saveMapData()
+    }
+    
     func addEntry(newEntryTitle: String, startTime: Date) {
         guard !newEntryTitle.isEmpty else { return }
         let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime)
@@ -155,8 +160,22 @@ class UserViewModel: ObservableObject {
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
             let currentTime = Date()
             let startTime = self.timeEntriesMap[title]?.startTime
-            self.timeEntriesMap[title]?.elapsedTime = currentTime.timeIntervalSince(startTime!)
+            let isPaused = self.timeEntriesMap[title]?.isPaused ?? false
+            if (isPaused){
+                self.timeEntriesMap[title]?.elapsedTime = currentTime.timeIntervalSince(currentTime)
+                return
+            }
+            else{
+                self.timeEntriesMap[title]?.elapsedTime = currentTime.timeIntervalSince(startTime!)
+            }
         }
+    }
+    
+    func startTimers() {
+        for key in timeEntriesMap.keys{
+            startTimer(for: key)
+        }
+        saveData()
     }
 
     func resetTimer(for key: String, reason: String, resetTime: Date) {
@@ -173,14 +192,30 @@ class UserViewModel: ObservableObject {
             print("No entry found for key: \(key)")
         }
         print("map after adding history", timeEntriesMap)
-        Data.timeEntriesMap = timeEntriesMap
-        Data.saveMapData()
+        saveData()
+    }
+    
+    func resetAndPauseTimer(for key: String, reason: String, resetTime: Date){
+        if var entry = timeEntriesMap[key] {
+            let newHistory = perItemTimerEntry(startTime: entry.startTime, endTime: resetTime, elapsedTime: resetTime.timeIntervalSince(entry.startTime), resetReason: reason)
+            if entry.history?.isEmpty ?? true {
+                entry.history = [newHistory]
+            } else {
+                entry.history?.append(newHistory)
+            }
+            entry.isPaused = true
+            entry.startTime = resetTime
+            timeEntriesMap[key] = entry
+        } else {
+            print("No entry found for key: \(key)")
+        }
+        print("map after adding history", timeEntriesMap)
+        saveData()
     }
     
     func deleteEntry(at key: String) {
         timeEntriesMap.removeValue(forKey: key)
-        Data.timeEntriesMap = timeEntriesMap
-        Data.saveMapData()
+        saveData()
     }
     
     func timeString(from elapsedTime: TimeInterval) -> String {
@@ -192,16 +227,9 @@ class UserViewModel: ObservableObject {
         return String(format: "%d days, %02d:%02d:%02d", days, hours, minutes, seconds)
     }
     
-    func startTimers() {
-        for key in timeEntriesMap.keys{
-            startTimer(for: key)
-        }
-    }
-    
     func addRule(rule : String, for title: String){
         timeEntriesMap[title]?.rules = rule
-        Data.timeEntriesMap = timeEntriesMap
-        Data.saveMapData()
+        saveData()
     }
     
     func getRules(for key: String) -> String? {

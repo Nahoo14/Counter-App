@@ -14,6 +14,7 @@ struct TimerEntry : Codable{
     var elapsedTime: TimeInterval = 0
     var rules: String?
     var history: [perItemTimerEntry]?
+    var isPaused: Bool?
 }
 
 struct perItemTimerEntry : Codable, Hashable{
