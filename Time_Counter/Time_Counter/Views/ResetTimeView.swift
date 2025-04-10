@@ -65,7 +65,7 @@ struct ResetTimeView: View {
                         showResetTime = false
                         selectedDate = Date()
                     }
-                    Button("Submit and suspend."){
+                    Button("Pause and submit."){
                         viewModel.resetAndPauseTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)
                         showReasonAlert = false
                         showResetTime = false

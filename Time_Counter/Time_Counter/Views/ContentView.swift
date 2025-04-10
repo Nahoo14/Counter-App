@@ -85,26 +85,25 @@ struct ContentView: View {
     
     // resetButton defines the view for the reset button.
     func resetButton(for key: String)-> some View{
-        let timeEntriesMap = viewModel.timeEntriesMap
-        let isPaused = timeEntriesMap[key]?.isPaused ?? false
+        let isPaused = viewModel.timeEntriesMap[key]?.isPaused ?? false
         if isPaused{
-            return Button(action: {
+            return AnyView(Button(action: {
             }) {
-                Text("Resume")
+                Image(systemName: "play.fill")
                     .foregroundColor(.red)
                     .padding(5)
                     .background(Color.gray.opacity(0.2))
                     .cornerRadius(5)
                     .onTapGesture{
-                        showResetTime = true
                         selectedKey = key
-                        print("showResetTime = \(showResetTime)")
+                        viewModel.resumeTimer(for: key)
+                        print("Resume pressed")
                     }
             }
-        }
-        return Button(action: {
+            )}
+        return AnyView( Button(action: {
         }) {
-            Text("Reset")
+            Image(systemName: "arrow.counterclockwise")
                 .foregroundColor(.red)
                 .padding(5)
                 .background(Color.gray.opacity(0.2))
@@ -114,7 +113,7 @@ struct ContentView: View {
                     selectedKey = key
                     print("showResetTime = \(showResetTime)")
                 }
-        }
+        })
     }
     
     @State private var showConfirmationDialogDelete = false

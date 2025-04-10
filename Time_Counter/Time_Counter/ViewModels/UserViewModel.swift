@@ -122,8 +122,13 @@ class UserViewModel: ObservableObject {
         let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime)
         timeEntriesMap[newEntryTitle] = newEntry
         startTimer(for: newEntryTitle) // Start the timer for the new entry
-        Data.timeEntriesMap = timeEntriesMap
-        Data.saveMapData()
+        saveData()
+    }
+    
+    func resumeTimer(for key: String){
+        timeEntriesMap[key]?.isPaused=false
+        timeEntriesMap[key]?.startTime=Date()
+        saveData()
     }
     
     // calculateAverage returns the average time per entry.
@@ -153,7 +158,6 @@ class UserViewModel: ObservableObject {
         return longest
     }
     
-    
     func startTimer(for title: String) {
         print("startTimer called for:",title)
         // Updates elapsed time every second.
@@ -162,7 +166,7 @@ class UserViewModel: ObservableObject {
             let startTime = self.timeEntriesMap[title]?.startTime
             let isPaused = self.timeEntriesMap[title]?.isPaused ?? false
             if (isPaused){
-                self.timeEntriesMap[title]?.elapsedTime = currentTime.timeIntervalSince(currentTime)
+                self.timeEntriesMap[title]?.elapsedTime = 0
                 return
             }
             else{
@@ -204,7 +208,7 @@ class UserViewModel: ObservableObject {
                 entry.history?.append(newHistory)
             }
             entry.isPaused = true
-            entry.startTime = resetTime
+            entry.elapsedTime = 0
             timeEntriesMap[key] = entry
         } else {
             print("No entry found for key: \(key)")
