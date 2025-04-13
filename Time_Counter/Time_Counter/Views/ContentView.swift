@@ -3,13 +3,13 @@ import SwiftUI
 struct ContentView: View {
     
     /**
-     * Reset, with start and pause modes
+     * Watch compatible
+     * Settings section
+     * Iphone 16 and more fix
+     * Theme
      * Parent child mode
      * Get Feedback
-     * Settings section
-     * Theme
      * Reminder
-     * Watch compatibile
     **/
     
     @ObservedObject var viewModel: UserViewModel
@@ -124,7 +124,9 @@ struct ContentView: View {
         }) {
             Image(systemName: "trash")
                 .foregroundColor(.red)
-                .buttonStyle(BorderlessButtonStyle())
+                .padding(5)
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(5)
                 .onTapGesture {
                     showConfirmationDialogDelete = true
                     selectedKey = key
