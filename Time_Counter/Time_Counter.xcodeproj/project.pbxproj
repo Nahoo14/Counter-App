@@ -6,7 +6,25 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		892ECD8F2DB42F4400CD02F0 /* time-counter-watch Watch App.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = 892ECD822DB42F4200CD02F0 /* time-counter-watch Watch App.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
+		892ECD8D2DB42F4400CD02F0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 892F7FF02CCDB39100FF22D0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 892ECD812DB42F4200CD02F0;
+			remoteInfo = "time-counter-watch Watch App";
+		};
+		892ECD932DB44E7700CD02F0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 892F7FF02CCDB39100FF22D0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 892ECD812DB42F4200CD02F0;
+			remoteInfo = "time-counter-watch Watch App";
+		};
 		892F80092CCDB39300FF22D0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 892F7FF02CCDB39100FF22D0 /* Project object */;
@@ -21,15 +39,50 @@
 			remoteGlobalIDString = 892F7FF72CCDB39100FF22D0;
 			remoteInfo = Time_Counter;
 		};
+		89B5B3962DACAFB500DD9A61 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 892F7FF02CCDB39100FF22D0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 89B5B3642DAC920000DD9A61;
+			remoteInfo = "Time-counter-watch Watch App";
+		};
+		89EF5B832DACCCCF00465C4A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 892F7FF02CCDB39100FF22D0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 89B5B3642DAC920000DD9A61;
+			remoteInfo = "Time-counter-watch Watch App";
+		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		89B5B3892DAC920100DD9A61 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				892ECD8F2DB42F4400CD02F0 /* time-counter-watch Watch App.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		892ECD822DB42F4200CD02F0 /* time-counter-watch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "time-counter-watch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		892F7FF82CCDB39100FF22D0 /* Time_Counter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Time_Counter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		892F80082CCDB39300FF22D0 /* Time_CounterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Time_CounterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		892F80122CCDB39300FF22D0 /* Time_CounterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Time_CounterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8980F3842DBEA51C00548692 /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		892ECD832DB42F4200CD02F0 /* time-counter-watch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "time-counter-watch Watch App";
+			sourceTree = "<group>";
+		};
 		892F7FFA2CCDB39100FF22D0 /* Time_Counter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Time_Counter;
@@ -48,6 +101,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		892ECD7F2DB42F4200CD02F0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		892F7FF52CCDB39100FF22D0 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -75,9 +135,12 @@
 		892F7FEF2CCDB39100FF22D0 = {
 			isa = PBXGroup;
 			children = (
+				8980F38D2DBEDFCC00548692 /* Shared */,
 				892F7FFA2CCDB39100FF22D0 /* Time_Counter */,
 				892F800B2CCDB39300FF22D0 /* Time_CounterTests */,
 				892F80152CCDB39300FF22D0 /* Time_CounterUITests */,
+				892ECD832DB42F4200CD02F0 /* time-counter-watch Watch App */,
+				89B5B3932DAC930600DD9A61 /* Frameworks */,
 				892F7FF92CCDB39100FF22D0 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -88,13 +151,51 @@
 				892F7FF82CCDB39100FF22D0 /* Time_Counter.app */,
 				892F80082CCDB39300FF22D0 /* Time_CounterTests.xctest */,
 				892F80122CCDB39300FF22D0 /* Time_CounterUITests.xctest */,
+				892ECD822DB42F4200CD02F0 /* time-counter-watch Watch App.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		8980F38D2DBEDFCC00548692 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		89B5B3932DAC930600DD9A61 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8980F3842DBEA51C00548692 /* WatchConnectivity.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		892ECD812DB42F4200CD02F0 /* time-counter-watch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 892ECD922DB42F4400CD02F0 /* Build configuration list for PBXNativeTarget "time-counter-watch Watch App" */;
+			buildPhases = (
+				892ECD7E2DB42F4200CD02F0 /* Sources */,
+				892ECD7F2DB42F4200CD02F0 /* Frameworks */,
+				892ECD802DB42F4200CD02F0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				892ECD832DB42F4200CD02F0 /* time-counter-watch Watch App */,
+			);
+			name = "time-counter-watch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "time-counter-watch Watch App";
+			productReference = 892ECD822DB42F4200CD02F0 /* time-counter-watch Watch App.app */;
+			productType = "com.apple.product-type.application";
+		};
 		892F7FF72CCDB39100FF22D0 /* Time_Counter */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 892F801C2CCDB39300FF22D0 /* Build configuration list for PBXNativeTarget "Time_Counter" */;
@@ -102,10 +203,15 @@
 				892F7FF42CCDB39100FF22D0 /* Sources */,
 				892F7FF52CCDB39100FF22D0 /* Frameworks */,
 				892F7FF62CCDB39100FF22D0 /* Resources */,
+				89B5B3892DAC920100DD9A61 /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				89B5B3972DACAFB500DD9A61 /* PBXTargetDependency */,
+				89EF5B842DACCCCF00465C4A /* PBXTargetDependency */,
+				892ECD8E2DB42F4400CD02F0 /* PBXTargetDependency */,
+				892ECD942DB44E7700CD02F0 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				892F7FFA2CCDB39100FF22D0 /* Time_Counter */,
@@ -170,9 +276,12 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1600;
+				LastSwiftUpdateCheck = 1620;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
+					892ECD812DB42F4200CD02F0 = {
+						CreatedOnToolsVersion = 16.2;
+					};
 					892F7FF72CCDB39100FF22D0 = {
 						CreatedOnToolsVersion = 16.0;
 					};
@@ -203,11 +312,19 @@
 				892F7FF72CCDB39100FF22D0 /* Time_Counter */,
 				892F80072CCDB39300FF22D0 /* Time_CounterTests */,
 				892F80112CCDB39300FF22D0 /* Time_CounterUITests */,
+				892ECD812DB42F4200CD02F0 /* time-counter-watch Watch App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		892ECD802DB42F4200CD02F0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		892F7FF62CCDB39100FF22D0 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -232,6 +349,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		892ECD7E2DB42F4200CD02F0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		892F7FF42CCDB39100FF22D0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -256,6 +380,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		892ECD8E2DB42F4400CD02F0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 892ECD812DB42F4200CD02F0 /* time-counter-watch Watch App */;
+			targetProxy = 892ECD8D2DB42F4400CD02F0 /* PBXContainerItemProxy */;
+		};
+		892ECD942DB44E7700CD02F0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 892ECD812DB42F4200CD02F0 /* time-counter-watch Watch App */;
+			targetProxy = 892ECD932DB44E7700CD02F0 /* PBXContainerItemProxy */;
+		};
 		892F800A2CCDB39300FF22D0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 892F7FF72CCDB39100FF22D0 /* Time_Counter */;
@@ -266,9 +400,79 @@
 			target = 892F7FF72CCDB39100FF22D0 /* Time_Counter */;
 			targetProxy = 892F80132CCDB39300FF22D0 /* PBXContainerItemProxy */;
 		};
+		89B5B3972DACAFB500DD9A61 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			targetProxy = 89B5B3962DACAFB500DD9A61 /* PBXContainerItemProxy */;
+		};
+		89EF5B842DACCCCF00465C4A /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			targetProxy = 89EF5B832DACCCCF00465C4A /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		892ECD902DB42F4400CD02F0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"time-counter-watch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = XRDW89F6TK;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "time-counter-watch";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "nahmean.Streak-Counter";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "nahmean.Streak-Counter.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.2;
+			};
+			name = Debug;
+		};
+		892ECD912DB42F4400CD02F0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"time-counter-watch Watch App/Preview Content\"";
+				DEVELOPMENT_TEAM = XRDW89F6TK;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "time-counter-watch";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "nahmean.Streak-Counter";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "nahmean.Streak-Counter.watchkitapp";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 11.2;
+			};
+			name = Release;
+		};
 		892F801A2CCDB39300FF22D0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -539,6 +743,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		892ECD922DB42F4400CD02F0 /* Build configuration list for PBXNativeTarget "time-counter-watch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				892ECD902DB42F4400CD02F0 /* Debug */,
+				892ECD912DB42F4400CD02F0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		892F7FF32CCDB39100FF22D0 /* Build configuration list for PBXProject "Time_Counter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
