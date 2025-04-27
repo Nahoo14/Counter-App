@@ -135,7 +135,6 @@
 		892F7FEF2CCDB39100FF22D0 = {
 			isa = PBXGroup;
 			children = (
-				8980F38D2DBEDFCC00548692 /* Shared */,
 				892F7FFA2CCDB39100FF22D0 /* Time_Counter */,
 				892F800B2CCDB39300FF22D0 /* Time_CounterTests */,
 				892F80152CCDB39300FF22D0 /* Time_CounterUITests */,
@@ -154,13 +153,6 @@
 				892ECD822DB42F4200CD02F0 /* time-counter-watch Watch App.app */,
 			);
 			name = Products;
-			sourceTree = "<group>";
-		};
-		8980F38D2DBEDFCC00548692 /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Shared;
 			sourceTree = "<group>";
 		};
 		89B5B3932DAC930600DD9A61 /* Frameworks */ = {
