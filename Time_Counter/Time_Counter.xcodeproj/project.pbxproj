@@ -77,6 +77,19 @@
 		8980F3842DBEA51C00548692 /* WatchConnectivity.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WatchConnectivity.framework; path = System/Library/Frameworks/WatchConnectivity.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		8980F3A62DBEF83A00548692 /* Exceptions for "Time_Counter" folder in "time-counter-watch Watch App" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Models/User.swift,
+				ViewModels/DataManager.swift,
+				ViewModels/EncryptionManager.swift,
+				ViewModels/UserViewModel.swift,
+			);
+			target = 892ECD812DB42F4200CD02F0 /* time-counter-watch Watch App */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		892ECD832DB42F4200CD02F0 /* time-counter-watch Watch App */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
@@ -85,6 +98,9 @@
 		};
 		892F7FFA2CCDB39100FF22D0 /* Time_Counter */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8980F3A62DBEF83A00548692 /* Exceptions for "Time_Counter" folder in "time-counter-watch Watch App" target */,
+			);
 			path = Time_Counter;
 			sourceTree = "<group>";
 		};
