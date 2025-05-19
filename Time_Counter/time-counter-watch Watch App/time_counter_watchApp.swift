@@ -9,9 +9,10 @@ import SwiftUI
 
 @main
 struct time_counter_watch_Watch_AppApp: App {
+    let viewModel = UserViewModel()
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(viewModel: viewModel)
         }
     }
 }

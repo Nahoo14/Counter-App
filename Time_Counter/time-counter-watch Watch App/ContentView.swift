@@ -9,17 +9,24 @@ import SwiftUI
 
 struct ContentView: View {
     
+    @ObservedObject var viewModel: UserViewModel
+    
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        let timeEntriesMap = viewModel.timeEntriesMap
+        Text("Streaks")
+        List {
+            ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
+                HStack {
+                    Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
+                        .font(.system(size: 15, weight: .bold, design: .monospaced))
+                }
+            }
         }
-        .padding()
     }
 }
 
+let viewModel = UserViewModel()
+
 #Preview {
-    ContentView()
+    ContentView(viewModel: viewModel)
 }
