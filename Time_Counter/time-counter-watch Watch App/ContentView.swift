@@ -13,15 +13,26 @@ struct ContentView: View {
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
-        Text("Streaks")
-        List {
-            ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
-                HStack {
-                    Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
-                        .font(.system(size: 15, weight: .bold, design: .monospaced))
+        VStack(alignment: .leading){
+            Text("Streaks")
+                .padding(.leading, 10)
+            List {
+                ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
+                    HStack {
+                        Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
+                            .font(.system(size: 15, weight: .bold, design: .monospaced))
+                    }
                 }
             }
         }
+        .background(
+            ZStack{
+                Image("Seedling")
+                    .resizable()
+                    .scaledToFill()
+                Color.black.opacity(0.5)
+            }
+        )
     }
 }
 
