@@ -8,28 +8,33 @@
 import Foundation
 import WatchConnectivity
 
-class WatchConnector: NSObject, WCSessionDelegate{
+class WatchConnector: NSObject, ObservableObject, WCSessionDelegate {
     var session: WCSession
-    
-    init(session: WCSession = .default) {
-        self.session = session
+
+    override init() {
+        self.session = WCSession.default
         super.init()
         session.delegate = self
         session.activate()
     }
-    
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) {
-        
+
+    func sendTimeEntries(_ message: [String: Any]) {
+        if session.isReachable {
+            session.sendMessage(message, replyHandler: nil) { error in
+                print("Error sending message:", error.localizedDescription)
+            }
+        } else {
+            print("Watch is not reachable, using updateApplicationContext.")
+            do {
+                try session.updateApplicationContext(message)
+            } catch {
+                print("Failed to update context:", error.localizedDescription)
+            }
+        }
     }
-    
-    func sessionDidBecomeInactive(_ session: WCSession) {
-        
-    }
-    
-    func sessionDidDeactivate(_ session: WCSession) {
-        
-    }
-    
-//    func session(_ session: WCSession, didReceiveMessage message: [String : Any]) {
-//    }
+
+    // Required WCSessionDelegate methods
+    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {}
+    func sessionDidBecomeInactive(_ session: WCSession) {}
+    func sessionDidDeactivate(_ session: WCSession) {}
 }

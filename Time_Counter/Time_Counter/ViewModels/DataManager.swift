@@ -37,5 +37,4 @@ class DataManager {
         print("Found nothing stored.")
         return [:] // Return empty map if loading fails
     }
-
 }

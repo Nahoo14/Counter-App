@@ -10,9 +10,11 @@ import SwiftUI
 @main
 struct Time_CounterApp: App {
     var userViewModel = UserViewModel()
+    @StateObject private var watchConnector = WatchConnector()
     var body: some Scene {
         WindowGroup {
             ContentView(viewModel : userViewModel)
+                .environmentObject(watchConnector)
         }
     }
 }

@@ -10,12 +10,13 @@ import SwiftUI
 struct ContentView: View {
     
     @ObservedObject var viewModel: UserViewModel
+    @ObservedObject var sessionManager = WatchSessionManager.shared
     
     var body: some View {
-        let timeEntriesMap = viewModel.timeEntriesMap
+        let timeEntriesMap = sessionManager.timeEntriesMap
         VStack(alignment: .leading){
             Text("Streaks")
-                .padding(.leading, 10)
+                .padding([.top, .leading], 0.1)
             List {
                 ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
                     HStack {

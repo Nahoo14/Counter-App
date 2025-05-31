@@ -18,6 +18,7 @@ struct ContentView: View {
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
         
+        
         NavigationStack {
             VStack {
                 Spacer()

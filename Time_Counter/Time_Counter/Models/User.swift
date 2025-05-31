@@ -23,4 +23,3 @@ struct perItemTimerEntry : Codable, Hashable{
     var elapsedTime : TimeInterval
     var resetReason : String
 }
-

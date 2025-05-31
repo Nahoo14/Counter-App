@@ -6,10 +6,14 @@
 //
 
 import SwiftUI
+import WatchConnectivity
 
 class UserViewModel: ObservableObject {
 
     @Published var timeEntriesMap : [String : TimerEntry] = [:]
+#if os(iOS)
+    let watchConnector = WatchConnector()
+#endif
     
     private var timer : Timer? = nil
     
@@ -17,13 +21,16 @@ class UserViewModel: ObservableObject {
     
     init() {
         timeEntriesMap = Data.loadMapData()
-        print("UserViewModel initialized. Loaded timeEntriesMap:", timeEntriesMap)
+
         startTimers()
     }
     
     func saveData(){
         Data.timeEntriesMap = timeEntriesMap
         Data.saveMapData()
+#if os(iOS)
+        sendTimeEntriesToWatch(with: watchConnector)
+#endif
     }
     
     func addEntry(newEntryTitle: String, startTime: Date) {
@@ -148,4 +155,20 @@ class UserViewModel: ObservableObject {
     func getRules(for key: String) -> String? {
         return timeEntriesMap[key]?.rules // Return empty string if no rule exists
     }
+#if os(iOS)
+    func sendTimeEntriesToWatch(with connector: WatchConnector) {
+        do {
+            let encodedData = try JSONEncoder().encode(timeEntriesMap)
+            let jsonString = String(data: encodedData, encoding: .utf8)
+
+            if let jsonString = jsonString {
+                connector.sendTimeEntries(["json": jsonString])
+                print("sent \(timeEntriesMap) to watch")
+            }
+        } catch {
+            print("Failed to encode timeEntriesMap:", error)
+        }
+    }
+#endif
+
 }
