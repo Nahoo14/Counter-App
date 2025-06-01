@@ -11,13 +11,11 @@ struct ContentView: View {
      * Get Feedback
      * Reminder
     **/
-    
     @ObservedObject var viewModel: UserViewModel
-    
+    @StateObject var connectivity = Connectivity()
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
-        
         
         NavigationStack {
             VStack {
@@ -46,6 +44,9 @@ struct ContentView: View {
                         }
                         .contentShape(Rectangle())
                     }
+                }
+                .onAppear{
+                    connectivity.sendMessage(timeEntriesMap)
                 }
                 .fullScreenCover(isPresented: $showResetTime, onDismiss: {
                     print("showResetTime = \(showResetTime)")

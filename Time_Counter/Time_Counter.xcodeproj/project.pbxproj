@@ -81,6 +81,7 @@
 		8980F3A62DBEF83A00548692 /* Exceptions for "Time_Counter" folder in "time-counter-watch Watch App" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
+				Connectivity.swift,
 				Models/User.swift,
 				ViewModels/DataManager.swift,
 				ViewModels/EncryptionManager.swift,

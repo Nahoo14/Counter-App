@@ -10,10 +10,10 @@ import SwiftUI
 struct ContentView: View {
     
     @ObservedObject var viewModel: UserViewModel
-    @ObservedObject var sessionManager = WatchSessionManager.shared
+    @StateObject var connectivity = Connectivity()
     
     var body: some View {
-        let timeEntriesMap = sessionManager.timeEntriesMap
+        let timeEntriesMap = connectivity.receivedData
         VStack(alignment: .leading){
             Text("Streaks")
                 .padding([.top, .leading], 0.1)
