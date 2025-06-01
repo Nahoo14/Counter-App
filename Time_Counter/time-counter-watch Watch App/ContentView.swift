@@ -8,26 +8,31 @@
 import SwiftUI
 
 struct ContentView: View {
-    
-    @ObservedObject var viewModel: UserViewModel
     @StateObject var connectivity = Connectivity()
+    @StateObject var viewModel = UserViewModel()
     
     var body: some View {
-        let timeEntriesMap = connectivity.receivedData
-        VStack(alignment: .leading){
+        VStack(alignment: .leading) {
             Text("Streaks")
                 .padding([.top, .leading], 0.1)
+
             List {
-                ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
+                ForEach(viewModel.timeEntriesMap.keys.sorted(), id: \.self) { key in
                     HStack {
-                        Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
+                        Text(key)
+                            .font(.system(size: 15, weight: .bold, design: .monospaced))
+                            .foregroundColor(.blue)
+                        Text(viewModel.timeString(from: viewModel.timeEntriesMap[key]!.elapsedTime))
                             .font(.system(size: 15, weight: .bold, design: .monospaced))
                     }
                 }
             }
         }
+        .onChange(of: connectivity.receivedData) {
+            viewModel.updateTimeEntriesMap(connectivity.receivedData)
+        }
         .background(
-            ZStack{
+            ZStack {
                 Image("Seedling")
                     .resizable()
                     .scaledToFill()

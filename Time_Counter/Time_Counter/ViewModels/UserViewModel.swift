@@ -149,5 +149,10 @@ class UserViewModel: ObservableObject {
     func getRules(for key: String) -> String? {
         return timeEntriesMap[key]?.rules // Return empty string if no rule exists
     }
+    
+    func updateTimeEntriesMap(_ newMap: [String: TimerEntry]) {
+        timeEntriesMap = newMap
+        startTimers()
+    }
 
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 // Model for each timer entry
-struct TimerEntry : Codable{
+struct TimerEntry : Codable, Equatable{
     let title: String
     var startTime: Date
     var elapsedTime: TimeInterval = 0
