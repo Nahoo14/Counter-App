@@ -37,7 +37,7 @@ struct ContentView: View {
                                     .foregroundColor(.blue)
                             }
                             .buttonStyle(.plain)
-                            Text(viewModel.timeString(from: timeEntriesMap[key]!.elapsedTime))
+                            Text(viewModel.timeStringEntries(for: viewModel.timeEntriesMap[key]!))
                                 .font(.system(size: 15, weight: .bold, design: .monospaced))
                             resetButton(for: key)
                             removeButton(for: key)

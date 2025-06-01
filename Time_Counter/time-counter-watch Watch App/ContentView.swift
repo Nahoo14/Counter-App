@@ -22,7 +22,7 @@ struct ContentView: View {
                         Text(key)
                             .font(.system(size: 15, weight: .bold, design: .monospaced))
                             .foregroundColor(.blue)
-                        Text(viewModel.timeString(from: viewModel.timeEntriesMap[key]!.elapsedTime))
+                        Text(viewModel.timeStringEntries(for: viewModel.timeEntriesMap[key]!))
                             .font(.system(size: 15, weight: .bold, design: .monospaced))
                     }
                 }
