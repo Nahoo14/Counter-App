@@ -2,15 +2,16 @@ import SwiftUI
 
 struct ContentView: View {
     
-    /**
+    /*
      * Watch compatible
+     * Is paused state is wonky
      * Settings section
      * Iphone 16 and more fix
      * Theme
      * Parent child mode
      * Get Feedback
      * Reminder
-    **/
+    */
     @ObservedObject var viewModel: UserViewModel
     @StateObject var connectivity = Connectivity()
     

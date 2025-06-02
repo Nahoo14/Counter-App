@@ -46,7 +46,11 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
     func sendMessage(_ map: [String: TimerEntry]) {
         let session = WCSession.default
 
-        guard session.isReachable else { return }
+        guard session.isReachable
+        else {
+            print("Session not reachable.")
+            return
+        }
 
         do {
             let data = try JSONEncoder().encode(map)
@@ -72,9 +76,7 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
                 let data = try JSONSerialization.data(withJSONObject: message, options: [])
                 let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: data)
                 self.receivedData = decoded
-                for (key, entry) in decoded {
-                    print("Received \(key): \(entry.elapsedTime)")
-                }
+                print("received : \(decoded)")
 
                 replyHandler(["response": "Received time entries"])
             } catch {
