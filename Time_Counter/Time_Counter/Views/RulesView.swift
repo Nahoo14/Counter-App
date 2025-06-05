@@ -62,7 +62,6 @@ struct rulesView : View {
                     .font(.headline)
                     .foregroundColor(.green)
             }
-            
         }
     }
 }
