@@ -47,7 +47,7 @@ struct ContentView: View {
                     }
                 }
                 .onAppear{
-                    connectivity.sendMessage(timeEntriesMap)
+                    connectivity.updateAndSend(timeEntriesMap: timeEntriesMap)
                 }
                 .fullScreenCover(isPresented: $showResetTime, onDismiss: {
                     print("showResetTime = \(showResetTime)")

@@ -170,7 +170,6 @@ class UserViewModel: ObservableObject {
     }
     
     func notifyWatch() {
-        connectivity.sendMessage(timeEntriesMap)
+        connectivity.updateAndSend(timeEntriesMap: self.timeEntriesMap)
     }
-
 }

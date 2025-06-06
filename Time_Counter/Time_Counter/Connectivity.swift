@@ -11,6 +11,7 @@ import WatchConnectivity
 class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
     @Published var receivedText = ""
     @Published var receivedData: [String: TimerEntry] = [:]
+    private var lastSentMap: [String: TimerEntry] = [:]
     
     override init(){
         super.init()
@@ -23,12 +24,14 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
     }
 #if os(iOS)
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) {
-        Task{
-            @MainActor in
-            if activationState == .activated{
-                if session.isWatchAppInstalled{
-                    self.receivedText = "Watch app is Installed."
+        if let encoded = session.receivedApplicationContext["timeEntriesMap"] as? Data {
+            do {
+                let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: encoded)
+                DispatchQueue.main.async {
+                    self.receivedData = decoded
                 }
+            } catch {
+                print("Failed to decode applicationContext:", error)
             }
         }
     }
@@ -43,32 +46,6 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
         
     }
 #endif
-    func sendMessage(_ map: [String: TimerEntry]) {
-        let session = WCSession.default
-
-        guard session.isReachable
-        else {
-            print("Session not reachable.")
-            return
-        }
-
-        do {
-            let data = try JSONEncoder().encode(map)
-            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                session.sendMessage(json) { response in
-                    Task { @MainActor in
-                        self.receivedText = "Received response: \(response)"
-                    }
-                } errorHandler: { error in
-                    Task { @MainActor in
-                        self.receivedText = "Error: \(error.localizedDescription)"
-                    }
-                }
-            }
-        } catch {
-            print("Encoding error: \(error)")
-        }
-    }
     
     func session(_ session: WCSession, didReceiveMessage message: [String: Any], replyHandler: @escaping ([String: Any]) -> Void) {
         Task { @MainActor in
@@ -83,6 +60,41 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
                 print("Decoding error: \(error)")
                 replyHandler(["response": "Failed to decode"])
             }
+        }
+    }
+    
+    func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
+            if let encoded = applicationContext["timeEntriesMap"] as? Data {
+                do {
+                    let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: encoded)
+                    DispatchQueue.main.async {
+                        self.receivedData = decoded
+                    }
+                } catch {
+                    print("Failed to decode timeEntriesMap:", error)
+                }
+            }
+        }
+    
+    func updateAndSend(timeEntriesMap: [String: TimerEntry]) {
+        lastSentMap = timeEntriesMap
+        sendUpdateToWatch()
+    }
+    
+    func sendUpdateToWatch() {
+        guard WCSession.default.activationState == .activated else { return }
+        
+        do {
+            let data = try JSONEncoder().encode(lastSentMap)
+            try WCSession.default.updateApplicationContext(["timeEntriesMap": data])
+        } catch {
+            print("Failed to send update: \(error)")
+        }
+    }
+    
+    func sessionReachabilityDidChange(_ session: WCSession) {
+        if session.isReachable {
+            sendUpdateToWatch()
         }
     }
 }
