@@ -20,8 +20,10 @@ struct ContentView: View {
                             .font(.system(size: 15, weight: .bold, design: .monospaced))
                             .foregroundColor(.blue)
                         Spacer()
-                        Text(viewModel.timeStringEntries(for: viewModel.timeEntriesMap[key]!))
+                        let isPaused = viewModel.timeEntriesMap[key]?.isPaused ?? false
+                        Text(viewModel.timeStringEntries(for: viewModel.timeEntriesMap[key]!, isPaused: isPaused))
                             .font(.system(size: 15, weight: .bold, design: .monospaced))
+                        resetButton(for: key)
                     }
                     .padding(8)
                     .background(RoundedRectangle(cornerRadius: 8).fill(Color.black))
@@ -34,6 +36,19 @@ struct ContentView: View {
         .onChange(of: connectivity.receivedData) {
             viewModel.updateTimeEntriesMap(connectivity.receivedData)
         }
+        .fullScreenCover(isPresented: $showResetTime, onDismiss: {
+            print("showResetTime = \(showResetTime)")
+            print("Sheet dismissed")
+        }) {
+            ResetTimeView(
+                showResetTime: $showResetTime,
+                selectedKey: $selectedKey,
+                showErrorAlert: $showErrorAlert,
+                showReasonAlert: $showReasonAlert,
+                userReason: $userReason,
+                viewModel: viewModel
+            )
+        }
         .background(
             ZStack {
                 Image("Seedling")
@@ -42,6 +57,47 @@ struct ContentView: View {
                 Color.black.opacity(0.5)
             }
         )
+    }
+    
+    // resetButton variables
+    @State private var showResetTime: Bool = false
+    @State private var showReasonAlert = false
+    @State private var selectedKey = ""
+    @State private var userReason = ""
+    @State private var showErrorAlert = false
+
+    
+    // resetButton defines the view for the reset button.
+    func resetButton(for key: String)-> some View {
+        let isPaused = viewModel.timeEntriesMap[key]?.isPaused ?? false
+        if isPaused{
+            return AnyView(Button(action: {
+            }) {
+                Image(systemName: "play.fill")
+                    .foregroundColor(.red)
+                    .padding(5)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(5)
+                    .onTapGesture{
+                        selectedKey = key
+                        viewModel.resumeTimer(for: key)
+                        print("Resume pressed")
+                    }
+            }
+            )}
+        return AnyView( Button(action: {
+        }) {
+            Image(systemName: "arrow.counterclockwise")
+                .foregroundColor(.red)
+                .padding(5)
+                .background(Color.gray.opacity(0.2))
+                .cornerRadius(5)
+                .onTapGesture{
+                    showResetTime = true
+                    selectedKey = key
+                    print("showResetTime = \(showResetTime)")
+                }
+        })
     }
 }
 

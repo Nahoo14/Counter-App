@@ -2,7 +2,7 @@
 //  ResetTimeView.swift
 //  Time_Counter
 //
-//  Created by Baby Tinishu on 3/30/25.
+//  Created by Baby Tinishu on 6/7/25.
 //
 
 import SwiftUI
@@ -23,11 +23,14 @@ struct ResetTimeView: View {
                 .font(.headline)
                 .foregroundColor(.red)
             
-            DatePicker("", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
-                .datePickerStyle(WheelDatePickerStyle())
-                .padding()
-                .frame(width: 200)
-            
+            DatePicker(
+                "",
+                selection: $selectedDate,
+                displayedComponents: [.date, .hourAndMinute]
+            )
+            .labelsHidden()
+
+
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) {
@@ -77,3 +80,4 @@ struct ResetTimeView: View {
         }
     }
 }
+

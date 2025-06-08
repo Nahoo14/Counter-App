@@ -3,8 +3,7 @@ import SwiftUI
 struct ContentView: View {
     
     /*
-     * Watch compatible
-     * Is paused state is wonky
+     * Watch compatible (Reset button, rules view)
      * Settings section
      * Iphone 16 and more fix
      * Theme
@@ -38,7 +37,8 @@ struct ContentView: View {
                                     .foregroundColor(.blue)
                             }
                             .buttonStyle(.plain)
-                            Text(viewModel.timeStringEntries(for: viewModel.timeEntriesMap[key]!))
+                            let isPaused = timeEntriesMap[key]?.isPaused ?? false
+                            Text(viewModel.timeStringEntries(for: viewModel.timeEntriesMap[key]!, isPaused: isPaused))
                                 .font(.system(size: 15, weight: .bold, design: .monospaced))
                             resetButton(for: key)
                             removeButton(for: key)

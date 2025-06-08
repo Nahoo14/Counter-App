@@ -89,7 +89,11 @@ class UserViewModel: ObservableObject {
     
     func startTimers() {
         for key in timeEntriesMap.keys{
-            startTimer(for: key)
+            let isPaused = timeEntriesMap[key]?.isPaused ?? false
+            print("timer \(key) , isPaused = \(isPaused)")
+            if !(isPaused){
+                startTimer(for: key)
+            }
         }
         saveData()
     }
@@ -146,7 +150,10 @@ class UserViewModel: ObservableObject {
         return String(format: "%d days, %02d:%02d:%02d", days, hours, minutes, seconds)
     }
     
-    func timeStringEntries(for entry: TimerEntry) -> String {
+    func timeStringEntries(for entry: TimerEntry, isPaused : Bool) -> String {
+        if isPaused{
+            return "0 days, 0:00:00"
+        }
         let elapsed = Date().timeIntervalSince(entry.startTime)
         let days = Int(elapsed) / 86400
         let hours = (Int(elapsed) % 86400) / 3600

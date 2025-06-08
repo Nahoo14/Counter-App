@@ -43,7 +43,6 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
     }
 #else
     func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) {
-        
     }
 #endif
     
@@ -54,7 +53,7 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
                 let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: data)
                 self.receivedData = decoded
                 print("received : \(decoded)")
-
+                
                 replyHandler(["response": "Received time entries"])
             } catch {
                 print("Decoding error: \(error)")
@@ -64,17 +63,17 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
     }
     
     func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String : Any]) {
-            if let encoded = applicationContext["timeEntriesMap"] as? Data {
-                do {
-                    let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: encoded)
-                    DispatchQueue.main.async {
-                        self.receivedData = decoded
-                    }
-                } catch {
-                    print("Failed to decode timeEntriesMap:", error)
+        if let encoded = applicationContext["timeEntriesMap"] as? Data {
+            do {
+                let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: encoded)
+                DispatchQueue.main.async {
+                    self.receivedData = decoded
                 }
+            } catch {
+                print("Failed to decode timeEntriesMap:", error)
             }
         }
+    }
     
     func updateAndSend(timeEntriesMap: [String: TimerEntry]) {
         lastSentMap = timeEntriesMap
