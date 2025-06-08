@@ -56,7 +56,6 @@ struct ContentView: View {
                     ResetTimeView(
                         showResetTime: $showResetTime,
                         selectedKey: $selectedKey,
-                        showErrorAlert: $showErrorAlert, 
                         showReasonAlert: $showReasonAlert,
                         userReason: $userReason,
                         viewModel: viewModel

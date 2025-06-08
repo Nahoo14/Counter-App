@@ -28,9 +28,6 @@ struct ResetTimeView: View {
                 selection: $selectedDate,
                 displayedComponents: [.date, .hourAndMinute]
             )
-            .labelsHidden()
-
-
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) {

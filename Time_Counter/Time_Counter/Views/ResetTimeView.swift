@@ -12,18 +12,18 @@ struct ResetTimeView: View {
     
     @Binding var showResetTime: Bool
     @Binding var selectedKey: String
-    @Binding var showErrorAlert: Bool
     @Binding var showReasonAlert: Bool
     @Binding var userReason: String
     var viewModel: UserViewModel
 
     var body: some View {
         VStack(spacing: 20) {
+            let entry = viewModel.timeEntriesMap[selectedKey]
             Text("Select reset time")
                 .font(.headline)
                 .foregroundColor(.red)
             
-            DatePicker("", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
+            DatePicker("", selection: $selectedDate, in: entry!.startTime...Date(), displayedComponents: [.date, .hourAndMinute])
                 .datePickerStyle(WheelDatePickerStyle())
                 .padding()
                 .frame(width: 200)
@@ -36,25 +36,13 @@ struct ResetTimeView: View {
                 .buttonStyle(.borderedProminent)
                 Spacer()
                 Button("Continue") {
-                    if let entry = viewModel.timeEntriesMap[selectedKey],
-                       selectedDate < entry.startTime {
-                        showErrorAlert = true
-                    } else if selectedDate >= Date() {
-                        showErrorAlert = true
-                    } else {
-                        showReasonAlert = true
-                    }
+                    showReasonAlert = true
                 }
                 .buttonStyle(.borderedProminent)
                 Spacer()
             }
         }
         .padding()
-        .alert("Error", isPresented: $showErrorAlert) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text("Invalid reset time.")
-        }
         .alert("Enter reason", isPresented: $showReasonAlert) {
             VStack {
                 TextField("Reason", text: $userReason)

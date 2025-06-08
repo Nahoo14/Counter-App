@@ -43,7 +43,7 @@ struct EntryView: View {
                     Text("Select start time")
                         .font(.headline)
                         .foregroundColor(.red)
-                    DatePicker("", selection: $selectedDate, displayedComponents: [.date, .hourAndMinute])
+                    DatePicker("", selection: $selectedDate, in: ...Date(),displayedComponents: [.date, .hourAndMinute])
                         .datePickerStyle(WheelDatePickerStyle())
                         .frame(width: 200)
                 }
