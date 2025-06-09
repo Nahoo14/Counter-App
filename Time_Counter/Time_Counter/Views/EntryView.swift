@@ -14,7 +14,7 @@ struct EntryView: View {
     @State var newEntryTitle = ""
     @State var showRulesEntry = false
     @State var showDateEntry = false
-    @State var selectedDate: Date = Date()
+    @State var selectedDate = Date()
     @State var rules = ""
     
     var body: some View {

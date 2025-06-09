@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ResetTimeView: View {
-    @State var selectedDate: Date = Date()
+    @State var selectedDate = Date()
     
     @Binding var showResetTime: Bool
     @Binding var selectedKey: String
