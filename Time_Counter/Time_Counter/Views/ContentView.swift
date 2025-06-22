@@ -3,7 +3,8 @@ import SwiftUI
 struct ContentView: View {
     
     /*
-     * Watch compatible (Reset button, rules view)
+     * Watch compatible (Reset button)
+     * Cleanup pause
      * Settings section
      * Iphone 16 and more fix
      * Theme

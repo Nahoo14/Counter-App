@@ -53,7 +53,23 @@ struct ContentView: View {
     
     // removeCounter defines the view for the remove button.
     func resetButton(for key:String)-> some View{
-        return Button(action: {
+        let isPaused = viewModel.timeEntriesMap[key]?.isPaused ?? false
+        if isPaused{
+            return AnyView(Button(action: {
+            }) {
+                Image(systemName: "play.fill")
+                    .foregroundColor(.red)
+                    .padding(5)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(5)
+                    .onTapGesture{
+                        selectedKey = key
+                        viewModel.resumeTimer(for: key)
+                        print("Resume pressed")
+                    }
+            }
+            )}
+        return AnyView(Button(action: {
         }) {
             Image(systemName: "arrow.counterclockwise")
                 .foregroundColor(.red)
@@ -66,12 +82,11 @@ struct ContentView: View {
                 }
                 .confirmationDialog("Are you sure you want to reset \(selectedKey)?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
                     Button("Yes") {
-                        // Need to send data to ios
                         viewModel.resetTimer(for: selectedKey, reason: userReason, resetTime: Date())
                     }
                     Button("Cancel", role: .cancel) { }
                 }
-        }
+        })
     }
 }
 
