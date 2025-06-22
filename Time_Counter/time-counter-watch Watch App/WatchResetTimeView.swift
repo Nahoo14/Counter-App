@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ResetTimeView: View {
     @State var selectedDate = Date()
-    
     @Binding var showResetTime: Bool
     @Binding var selectedKey: String
     @Binding var showErrorAlert: Bool
@@ -19,15 +18,6 @@ struct ResetTimeView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            Text("Select reset time")
-                .font(.headline)
-                .foregroundColor(.red)
-            
-            DatePicker(
-                "Select Date and Time",
-                selection: $selectedDate,
-                displayedComponents: [.date, .hourAndMinute]
-            )
             HStack {
                 Spacer()
                 Button("Cancel", role: .cancel) {
@@ -61,13 +51,6 @@ struct ResetTimeView: View {
                 VStack {
                     Button("Submit") {
                         viewModel.resetTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)
-                        showReasonAlert = false
-                        showResetTime = false
-                        selectedDate = Date()
-                    }
-                    Button("Submit and pause"){
-                        viewModel.resetAndPauseTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)
-                        showReasonAlert = false
                         showResetTime = false
                         selectedDate = Date()
                     }

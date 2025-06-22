@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject var connectivity = Connectivity()
+    var connectivity = Connectivity.shared
     @StateObject var viewModel = UserViewModel()
     
     var body: some View {
@@ -36,19 +36,6 @@ struct ContentView: View {
         .onChange(of: connectivity.receivedData) {
             viewModel.updateTimeEntriesMap(connectivity.receivedData)
         }
-        .fullScreenCover(isPresented: $showResetTime, onDismiss: {
-            print("showResetTime = \(showResetTime)")
-            print("Sheet dismissed")
-        }) {
-            ResetTimeView(
-                showResetTime: $showResetTime,
-                selectedKey: $selectedKey,
-                showErrorAlert: $showErrorAlert,
-                showReasonAlert: $showReasonAlert,
-                userReason: $userReason,
-                viewModel: viewModel
-            )
-        }
         .background(
             ZStack {
                 Image("Seedling")
@@ -59,45 +46,32 @@ struct ContentView: View {
         )
     }
     
-    // resetButton variables
-    @State private var showResetTime: Bool = false
-    @State private var showReasonAlert = false
+    @State private var showConfirmationDialogDelete = false
     @State private var selectedKey = ""
     @State private var userReason = ""
-    @State private var showErrorAlert = false
 
     
-    // resetButton defines the view for the reset button.
-    func resetButton(for key: String)-> some View {
-        let isPaused = viewModel.timeEntriesMap[key]?.isPaused ?? false
-        if isPaused{
-            return AnyView(Button(action: {
-            }) {
-                Image(systemName: "play.fill")
-                    .foregroundColor(.red)
-                    .padding(5)
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(5)
-                    .onTapGesture{
-                        selectedKey = key
-                        viewModel.resumeTimer(for: key)
-                        print("Resume pressed")
-                    }
-            }
-            )}
-        return AnyView( Button(action: {
+    // removeCounter defines the view for the remove button.
+    func resetButton(for key:String)-> some View{
+        return Button(action: {
         }) {
             Image(systemName: "arrow.counterclockwise")
                 .foregroundColor(.red)
                 .padding(5)
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(5)
-                .onTapGesture{
-                    showResetTime = true
+                .onTapGesture {
+                    showConfirmationDialogDelete = true
                     selectedKey = key
-                    print("showResetTime = \(showResetTime)")
                 }
-        })
+                .confirmationDialog("Are you sure you want to reset \(selectedKey)?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
+                    Button("Yes") {
+                        // Need to send data to ios
+                        viewModel.resetTimer(for: selectedKey, reason: userReason, resetTime: Date())
+                    }
+                    Button("Cancel", role: .cancel) { }
+                }
+        }
     }
 }
 
@@ -106,3 +80,4 @@ let viewModel = UserViewModel()
 #Preview {
     ContentView(viewModel: viewModel)
 }
+

@@ -11,7 +11,7 @@ import WatchConnectivity
 class UserViewModel: ObservableObject {
 
     @Published var timeEntriesMap : [String : TimerEntry] = [:]
-    @StateObject var connectivity = Connectivity()
+    var connectivity = Connectivity.shared
     
     private var timer : Timer? = nil
     
@@ -19,7 +19,6 @@ class UserViewModel: ObservableObject {
     
     init() {
         timeEntriesMap = Data.loadMapData()
-
         startTimers()
     }
     
@@ -40,6 +39,7 @@ class UserViewModel: ObservableObject {
     func resumeTimer(for key: String){
         timeEntriesMap[key]?.isPaused=false
         timeEntriesMap[key]?.startTime=Date()
+        notifyWatch()
         saveData()
     }
     
@@ -112,7 +112,11 @@ class UserViewModel: ObservableObject {
             print("No entry found for key: \(key)")
         }
         print("map after adding history", timeEntriesMap)
+#if os(iOS)
         notifyWatch()
+#else
+        notifyiOS()
+#endif
         saveData()
     }
     
@@ -173,10 +177,15 @@ class UserViewModel: ObservableObject {
     
     func updateTimeEntriesMap(_ newMap: [String: TimerEntry]) {
         timeEntriesMap = newMap
+        saveData()
         startTimers()
     }
     
     func notifyWatch() {
         connectivity.updateAndSend(timeEntriesMap: self.timeEntriesMap)
+    }
+    
+    func notifyiOS() {
+        connectivity.sendUpdateToiOS(timeEntriesMap: self.timeEntriesMap)
     }
 }

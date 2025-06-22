@@ -9,6 +9,8 @@ import Foundation
 import WatchConnectivity
 
 class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
+    static let shared = Connectivity()
+    
     @Published var receivedText = ""
     @Published var receivedData: [String: TimerEntry] = [:]
     private var lastSentMap: [String: TimerEntry] = [:]
@@ -28,6 +30,7 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
             do {
                 let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: encoded)
                 DispatchQueue.main.async {
+                    print("ios received \(decoded)")
                     self.receivedData = decoded
                 }
             } catch {
@@ -78,6 +81,26 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
     func updateAndSend(timeEntriesMap: [String: TimerEntry]) {
         lastSentMap = timeEntriesMap
         sendUpdateToWatch()
+    }
+    
+    func sendUpdateToiOS(timeEntriesMap: [String: TimerEntry]) {
+        guard WCSession.default.isReachable else {
+            print("iOS is not reachable")
+            return
+        }
+
+        do {
+            let data = try JSONEncoder().encode(timeEntriesMap)
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                WCSession.default.sendMessage(json, replyHandler: { response in
+                    print("Sent update to iOS, response:", response)
+                }, errorHandler: { error in
+                    print("Error sending to iOS:", error)
+                })
+            }
+        } catch {
+            print("Failed to encode timeEntriesMap for iOS:", error)
+        }
     }
     
     func sendUpdateToWatch() {

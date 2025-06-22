@@ -12,7 +12,7 @@ struct ContentView: View {
      * Reminder
     */
     @ObservedObject var viewModel: UserViewModel
-    @StateObject var connectivity = Connectivity()
+    var connectivity = Connectivity.shared
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
@@ -48,6 +48,9 @@ struct ContentView: View {
                 }
                 .onAppear{
                     connectivity.updateAndSend(timeEntriesMap: timeEntriesMap)
+                }
+                .onChange(of: connectivity.receivedData) { newData in
+                    viewModel.updateTimeEntriesMap(newData)
                 }
                 .fullScreenCover(isPresented: $showResetTime, onDismiss: {
                     print("showResetTime = \(showResetTime)")
