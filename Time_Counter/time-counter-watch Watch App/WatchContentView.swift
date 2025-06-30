@@ -8,30 +8,45 @@
 import SwiftUI
 
 struct ContentView: View {
+    @ObservedObject var viewModel: UserViewModel
     var connectivity = Connectivity.shared
-    @StateObject var viewModel = UserViewModel()
+    
+    @State private var path: [String] = []
+    @State private var userReason = ""
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            List {
-                ForEach(viewModel.timeEntriesMap.keys.sorted(), id: \.self) { key in
-                    HStack {
-                        Text(key)
-                            .font(.system(size: 15, weight: .bold, design: .monospaced))
-                            .foregroundColor(.blue)
-                        Spacer()
-                        let isPaused = viewModel.timeEntriesMap[key]?.isPaused ?? false
-                        Text(viewModel.timeStringEntries(for: viewModel.timeEntriesMap[key]!, isPaused: isPaused))
-                            .font(.system(size: 15, weight: .bold, design: .monospaced))
-                        resetButton(for: key)
+        NavigationStack(path: $path) {
+            VStack(alignment: .leading, spacing: 4) {
+                List {
+                    ForEach(viewModel.timeEntriesMap.keys.sorted(), id: \.self) { key in
+                        if let entry = viewModel.timeEntriesMap[key] {
+                            let isPaused = entry.isPaused
+                            TimerRowView(
+                                key: key,
+                                entry: entry,
+                                resetButton: {
+                                    resetButton(for: key) as! AnyView
+                                },
+                                timeString: viewModel.timeStringEntries(for: entry, isPaused: isPaused ?? false)
+                            )
+                        }
                     }
-                    .padding(8)
-                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.black))
-                    .foregroundColor(.white)
-                    .listRowBackground(Color.clear)
                 }
+                .padding(.leading, 0.1)
             }
-            .padding([.leading], 0.1)
+            .navigationDestination(for: String.self) { key in
+                ResetInputView(
+                    key: key,
+                    userReason: $userReason,
+                    onSubmit: {
+                        viewModel.resetTimer(for: key, reason: userReason, resetTime: Date())
+                        path.removeLast()
+                    },
+                    onCancel: {
+                        path.removeLast()
+                    }
+                )
+            }
         }
         .onChange(of: connectivity.receivedData) {
             viewModel.updateTimeEntriesMap(connectivity.receivedData)
@@ -45,14 +60,10 @@ struct ContentView: View {
             }
         )
     }
-    
-    @State private var showConfirmationDialogDelete = false
+   
     @State private var selectedKey = ""
-    @State private var userReason = ""
-
-    
     // removeCounter defines the view for the remove button.
-    func resetButton(for key:String)-> some View{
+    func resetButton(for key:String)-> some View {
         let isPaused = viewModel.timeEntriesMap[key]?.isPaused ?? false
         if isPaused{
             return AnyView(Button(action: {
@@ -65,7 +76,6 @@ struct ContentView: View {
                     .onTapGesture{
                         selectedKey = key
                         viewModel.resumeTimer(for: key)
-                        print("Resume pressed")
                     }
             }
             )}
@@ -77,14 +87,8 @@ struct ContentView: View {
                 .background(Color.gray.opacity(0.2))
                 .cornerRadius(5)
                 .onTapGesture {
-                    showConfirmationDialogDelete = true
-                    selectedKey = key
-                }
-                .confirmationDialog("Are you sure you want to reset \(selectedKey)?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
-                    Button("Yes") {
-                        viewModel.resetTimer(for: selectedKey, reason: userReason, resetTime: Date())
-                    }
-                    Button("Cancel", role: .cancel) { }
+                    userReason = ""
+                    path.append(key)
                 }
         })
     }
@@ -95,4 +99,3 @@ let viewModel = UserViewModel()
 #Preview {
     ContentView(viewModel: viewModel)
 }
-

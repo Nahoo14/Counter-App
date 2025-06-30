@@ -4,7 +4,8 @@ struct ContentView: View {
     
     /*
      * Watch compatible (Reset button)
-     * Cleanup pause
+     * Send data when watch becomes availaible
+     * Publish
      * Settings section
      * Iphone 16 and more fix
      * Theme
@@ -12,6 +13,7 @@ struct ContentView: View {
      * Get Feedback
      * Reminder
     */
+    
     @ObservedObject var viewModel: UserViewModel
     var connectivity = Connectivity.shared
     
