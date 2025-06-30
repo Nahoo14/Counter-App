@@ -3,8 +3,6 @@ import SwiftUI
 struct ContentView: View {
     
     /*
-     * Watch compatible (Reset button)
-     * Send data when watch becomes availaible
      * Publish
      * Settings section
      * Iphone 16 and more fix

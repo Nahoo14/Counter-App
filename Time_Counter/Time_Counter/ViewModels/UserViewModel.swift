@@ -32,14 +32,14 @@ class UserViewModel: ObservableObject {
         let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime)
         timeEntriesMap[newEntryTitle] = newEntry
         startTimer(for: newEntryTitle) // Start the timer for the new entry
-        notifyWatch()
+        notifyOther()
         saveData()
     }
     
     func resumeTimer(for key: String){
         timeEntriesMap[key]?.isPaused=false
         timeEntriesMap[key]?.startTime=Date()
-        notifyWatch()
+        notifyOther()
         saveData()
     }
     
@@ -112,11 +112,7 @@ class UserViewModel: ObservableObject {
             print("No entry found for key: \(key)")
         }
         print("map after adding history", timeEntriesMap)
-#if os(iOS)
-        notifyWatch()
-#else
-        notifyiOS()
-#endif
+        notifyOther()
         saveData()
     }
     
@@ -135,13 +131,13 @@ class UserViewModel: ObservableObject {
             print("No entry found for key: \(key)")
         }
         print("map after adding history", timeEntriesMap)
-        notifyWatch()
+        notifyOther()
         saveData()
     }
     
     func deleteEntry(at key: String) {
         timeEntriesMap.removeValue(forKey: key)
-        notifyWatch()
+        notifyOther()
         saveData()
     }
     
@@ -187,5 +183,13 @@ class UserViewModel: ObservableObject {
     
     func notifyiOS() {
         connectivity.sendUpdateToiOS(timeEntriesMap: self.timeEntriesMap)
+    }
+    
+    func notifyOther(){
+#if os(iOS)
+        notifyWatch()
+#else
+        notifyiOS()
+#endif
     }
 }
