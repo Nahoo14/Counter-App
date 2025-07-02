@@ -178,10 +178,12 @@ class UserViewModel: ObservableObject {
     }
     
     func notifyWatch() {
-        connectivity.updateAndSend(timeEntriesMap: self.timeEntriesMap)
+        print("sending \(timeEntriesMap) to watch.")
+        connectivity.sendUpdateToWatch(timeEntriesMap: self.timeEntriesMap)
     }
     
     func notifyiOS() {
+        print("sending \(timeEntriesMap) to ios")
         connectivity.sendUpdateToiOS(timeEntriesMap: self.timeEntriesMap)
     }
     

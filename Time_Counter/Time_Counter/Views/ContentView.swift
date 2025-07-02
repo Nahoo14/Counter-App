@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     
     /*
+     * IOS availaibility bug
      * Publish
      * Settings section
      * Iphone 16 and more fix
@@ -13,7 +14,7 @@ struct ContentView: View {
     */
     
     @ObservedObject var viewModel: UserViewModel
-    var connectivity = Connectivity.shared
+    @StateObject var connectivity = Connectivity.shared
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
@@ -48,7 +49,7 @@ struct ContentView: View {
                     }
                 }
                 .onAppear{
-                    connectivity.updateAndSend(timeEntriesMap: timeEntriesMap)
+                    connectivity.sendUpdateToWatch(timeEntriesMap: timeEntriesMap)
                 }
                 .onChange(of: connectivity.receivedData) { newData in
                     viewModel.updateTimeEntriesMap(newData)

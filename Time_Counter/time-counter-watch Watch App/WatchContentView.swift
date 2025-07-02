@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     @ObservedObject var viewModel: UserViewModel
-    var connectivity = Connectivity.shared
+    @StateObject var connectivity = Connectivity.shared
     
     @State private var path: [String] = []
     @State private var userReason = ""
@@ -48,7 +48,8 @@ struct ContentView: View {
                 )
             }
         }
-        .onChange(of: connectivity.receivedData) {
+        .onChange(of: connectivity.receivedData) {oldValue, newValue in
+            print("🔄 onChange triggered with: \(newValue)")
             viewModel.updateTimeEntriesMap(connectivity.receivedData)
         }
         .background(
