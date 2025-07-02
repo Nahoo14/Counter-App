@@ -141,8 +141,8 @@ class UserViewModel: ObservableObject {
         saveData()
     }
     
+    
     func timeString(from elapsedTime: TimeInterval) -> String {
-        // print("timeEntries map =", timeEntriesMap)
         let days = Int(elapsedTime) / 86400
         let hours = (Int(elapsedTime) % 86400) / 3600
         let minutes = (Int(elapsedTime) % 3600) / 60
@@ -172,6 +172,9 @@ class UserViewModel: ObservableObject {
     }
     
     func updateTimeEntriesMap(_ newMap: [String: TimerEntry]) {
+        if newMap == [:]{
+            return
+        }
         timeEntriesMap = newMap
         saveData()
         startTimers()

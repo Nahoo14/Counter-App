@@ -48,8 +48,7 @@ struct ContentView: View {
                 )
             }
         }
-        .onChange(of: connectivity.receivedData) {oldValue, newValue in
-            print("🔄 onChange triggered with: \(newValue)")
+        .onChange(of: connectivity.receivedData) {
             viewModel.updateTimeEntriesMap(connectivity.receivedData)
         }
         .background(

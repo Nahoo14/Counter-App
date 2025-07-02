@@ -140,9 +140,9 @@ struct ContentView: View {
                 }
                 .confirmationDialog("Are you sure you want to delete \(selectedKey)?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
                     Button("Yes") {
-                        viewModel.deleteEntry(at: selectedKey)
+                        viewModel.deleteEntry(at: key)
                     }
-                    Button("Cancel", role: .cancel) { }
+                    Button("Cancel", role: .cancel) {}
                 }
         }
     }

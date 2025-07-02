@@ -58,17 +58,18 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
             do {
                 let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: encoded)
                 DispatchQueue.main.async {
-                    print("✅ watchOS received updated map: \(decoded)")
+                    print("watchOS received updated map: \(decoded)")
                     self.receivedData = decoded
                 }
             } catch {
-                print("❌ watchOS failed to decode timeEntriesMap: \(error)")
+                print("watchOS failed to decode timeEntriesMap: \(error)")
             }
         } else {
-            print("⚠️ applicationContext didn't contain expected data")
+            print("pplicationContext didn't contain expected data")
         }
     }
     
+    // sends update to ios
     func sendUpdateToiOS(timeEntriesMap: [String: TimerEntry]) {
         if WCSession.default.isReachable {
             do {
@@ -89,6 +90,7 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
         }
     }
     
+    // sends update to watchos
     func sendUpdateToWatch(timeEntriesMap: [String: TimerEntry]) {
         guard WCSession.default.activationState == .activated else {
             print("WCSession not activated yet — storing for retry")
@@ -108,10 +110,13 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
     
     func sessionReachabilityDidChange(_ session: WCSession) {
         if session.isReachable {
+            if pendingData != [:]{
 #if os(iOS)
 #else
-            sendUpdateToiOS(timeEntriesMap: pendingData)
+                sendUpdateToiOS(timeEntriesMap: pendingData)
+                print("availaibility changed, sending pendingData: \(pendingData)")
 #endif
+            }
         }
     }
 }
