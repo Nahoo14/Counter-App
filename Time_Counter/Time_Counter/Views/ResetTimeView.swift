@@ -47,13 +47,13 @@ struct ResetTimeView: View {
             VStack {
                 TextField("Reason", text: $userReason)
                 VStack {
-                    Button("Submit") {
+                    Button("Reset") {
                         viewModel.resetTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)
                         showReasonAlert = false
                         showResetTime = false
                         selectedDate = Date()
                     }
-                    Button("Submit + Pause"){
+                    Button("Reset + Pause"){
                         viewModel.resetAndPauseTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)
                         showReasonAlert = false
                         showResetTime = false

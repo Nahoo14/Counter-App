@@ -17,7 +17,7 @@ struct ResetInputView: View {
             Text("Enter reason")
             TextField("Reason", text: $userReason)
             HStack {
-                Button("Submit") {
+                Button("Reset") {
                     onSubmit()
                 }
                 Button("Cancel", role: .cancel) {

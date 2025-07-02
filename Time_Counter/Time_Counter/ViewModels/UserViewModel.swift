@@ -172,9 +172,6 @@ class UserViewModel: ObservableObject {
     }
     
     func updateTimeEntriesMap(_ newMap: [String: TimerEntry]) {
-        if newMap == [:]{
-            return
-        }
         timeEntriesMap = newMap
         saveData()
         startTimers()
