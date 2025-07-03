@@ -20,7 +20,7 @@ struct TimerRowView: View {
                 .foregroundColor(.blue)
             Spacer()
             Text(timeString)
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                .font(.system(size: 13, weight: .bold, design: .monospaced))
             resetButton()
         }
         .padding(8)

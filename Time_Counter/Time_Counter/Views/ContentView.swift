@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     
     /*
-     * IOS availaibility bug (need to keep track of last updated so I can compare when updating.)
      * Publish
      * Settings section
      * Iphone 16 and more fix
