@@ -13,7 +13,7 @@ struct ContentView: View {
      * Reminder
     */
     
-    @ObservedObject var viewModel: UserViewModel
+    @StateObject var viewModel: UserViewModel
     @StateObject var connectivity = Connectivity.shared
     
     var body: some View {

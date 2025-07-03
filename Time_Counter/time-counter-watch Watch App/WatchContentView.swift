@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject var viewModel: UserViewModel
+    @StateObject var viewModel: UserViewModel
     @StateObject var connectivity = Connectivity.shared
     
     @State private var path: [String] = []

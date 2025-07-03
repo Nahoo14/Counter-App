@@ -20,6 +20,7 @@ struct ResetInputView: View {
                 Button("Reset") {
                     onSubmit()
                 }
+                Spacer()
                 Button("Cancel", role: .cancel) {
                     onCancel()
                 }

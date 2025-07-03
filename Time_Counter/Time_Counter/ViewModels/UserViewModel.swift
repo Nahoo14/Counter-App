@@ -159,7 +159,10 @@ class UserViewModel: ObservableObject {
         let hours = (Int(elapsed) % 86400) / 3600
         let minutes = (Int(elapsed) % 3600) / 60
         let seconds = Int(elapsed) % 60
-        return String(format: "%d d\n%02d hrs\n%02d:%02d", days, hours, minutes, seconds)
+        let timeText = days > 0
+        ? String(format: "%d d\n%02d hrs\n%02d:%02d", days, hours, minutes, seconds)
+        : String(format: "%02d hrs\n%02d:%02d", hours, minutes, seconds)
+        return timeText
     }
     
     func addRule(rule : String, for title: String){
