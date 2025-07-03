@@ -152,14 +152,14 @@ class UserViewModel: ObservableObject {
     
     func timeStringEntries(for entry: TimerEntry, isPaused : Bool) -> String {
         if isPaused{
-            return "0 days, 0:00:00"
+            return "0:00:00"
         }
         let elapsed = Date().timeIntervalSince(entry.startTime)
         let days = Int(elapsed) / 86400
         let hours = (Int(elapsed) % 86400) / 3600
         let minutes = (Int(elapsed) % 3600) / 60
         let seconds = Int(elapsed) % 60
-        return String(format: "%d days, %02d:%02d:%02d", days, hours, minutes, seconds)
+        return String(format: "%d d\n%02d hrs\n%02d:%02d", days, hours, minutes, seconds)
     }
     
     func addRule(rule : String, for title: String){

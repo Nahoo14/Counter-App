@@ -16,11 +16,11 @@ struct TimerRowView: View {
     var body: some View {
         HStack {
             Text(key)
-                .font(.system(size: 15, weight: .bold, design: .monospaced))
+                .font(.system(size: 12, weight: .bold, design: .monospaced))
                 .foregroundColor(.blue)
             Spacer()
             Text(timeString)
-                .font(.system(size: 15, weight: .bold, design: .monospaced))
+                .font(.system(size: 12, weight: .bold, design: .monospaced))
             resetButton()
         }
         .padding(8)

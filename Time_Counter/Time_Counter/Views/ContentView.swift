@@ -3,7 +3,7 @@ import SwiftUI
 struct ContentView: View {
     
     /*
-     * IOS availaibility bug
+     * IOS availaibility bug (need to keep track of last updated so I can compare when updating.)
      * Publish
      * Settings section
      * Iphone 16 and more fix
@@ -140,7 +140,7 @@ struct ContentView: View {
                 }
                 .confirmationDialog("Are you sure you want to delete \(selectedKey)?", isPresented: $showConfirmationDialogDelete, titleVisibility: .visible) {
                     Button("Yes") {
-                        viewModel.deleteEntry(at: key)
+                        viewModel.deleteEntry(at: selectedKey)
                     }
                     Button("Cancel", role: .cancel) {}
                 }
