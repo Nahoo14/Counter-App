@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     
     /*
+     * Bug where I update the watchos while ios is not active.
      * Publish
      * Settings section
      * Iphone 16 and more fix

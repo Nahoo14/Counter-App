@@ -29,7 +29,7 @@ class UserViewModel: ObservableObject {
     
     func addEntry(newEntryTitle: String, startTime: Date) {
         guard !newEntryTitle.isEmpty else { return }
-        let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime)
+        let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime, lastUpdated: Date())
         timeEntriesMap[newEntryTitle] = newEntry
         startTimer(for: newEntryTitle) // Start the timer for the new entry
         notifyOther()
@@ -37,8 +37,9 @@ class UserViewModel: ObservableObject {
     }
     
     func resumeTimer(for key: String){
-        timeEntriesMap[key]?.isPaused=false
-        timeEntriesMap[key]?.startTime=Date()
+        timeEntriesMap[key]?.isPaused = false
+        timeEntriesMap[key]?.startTime = Date()
+        timeEntriesMap[key]?.lastUpdated = Date()
         notifyOther()
         saveData()
     }
@@ -107,6 +108,7 @@ class UserViewModel: ObservableObject {
                 entry.history?.append(newHistory)
             }
             entry.startTime = resetTime
+            entry.lastUpdated = Date()
             timeEntriesMap[key] = entry
         } else {
             print("No entry found for key: \(key)")
@@ -126,6 +128,7 @@ class UserViewModel: ObservableObject {
             }
             entry.isPaused = true
             entry.elapsedTime = 0
+            entry.lastUpdated = Date()
             timeEntriesMap[key] = entry
         } else {
             print("No entry found for key: \(key)")
@@ -152,7 +155,7 @@ class UserViewModel: ObservableObject {
     
     func timeStringEntries(for entry: TimerEntry, isPaused : Bool) -> String {
         if isPaused{
-            return "0:00:00"
+            return "Paused"
         }
         let elapsed = Date().timeIntervalSince(entry.startTime)
         let days = Int(elapsed) / 86400
@@ -175,7 +178,20 @@ class UserViewModel: ObservableObject {
     }
     
     func updateTimeEntriesMap(_ newMap: [String: TimerEntry]) {
-        timeEntriesMap = newMap
+        // check last updated time and update here.
+        var updated = timeEntriesMap
+        for (key,val) in newMap{
+            if let existing = updated[key]{
+                if val.lastUpdated > existing.lastUpdated{
+                    updated[key] = val
+                    print("Updated key \(key)")
+                }
+            }
+            else{
+                updated[key] = val
+            }
+        }
+        timeEntriesMap = updated
         saveData()
         startTimers()
     }
