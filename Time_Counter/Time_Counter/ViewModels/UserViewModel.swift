@@ -179,16 +179,13 @@ class UserViewModel: ObservableObject {
     
     func updateTimeEntriesMap(_ newMap: [String: TimerEntry]) {
         // check last updated time and update here.
-        var updated = timeEntriesMap
+        var updated = newMap
         for (key,val) in newMap{
-            if let existing = updated[key]{
+            if let existing = timeEntriesMap[key]{
                 if val.lastUpdated > existing.lastUpdated{
                     updated[key] = val
                     print("Updated key \(key)")
                 }
-            }
-            else{
-                updated[key] = val
             }
         }
         timeEntriesMap = updated
