@@ -11,15 +11,30 @@ import WatchConnectivity
 class UserViewModel: ObservableObject {
 
     @Published var timeEntriesMap : [String : TimerEntry] = [:]
+    @Published var timePulse = Date()
+    
     var connectivity = Connectivity.shared
     
     private var timer : Timer? = nil
     
     var Data = DataManager()
     
+    func startUpdatingTime() {
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+            DispatchQueue.main.async {
+                self.timePulse = Date() // Update triggers SwiftUI refresh
+            }
+        }
+    }
+    
+    func stopUpdatingTime() {
+        timer?.invalidate()
+        timer = nil
+    }
+    
     init() {
         timeEntriesMap = Data.loadMapData()
-        startTimers()
     }
     
     func saveData(){
@@ -31,7 +46,6 @@ class UserViewModel: ObservableObject {
         guard !newEntryTitle.isEmpty else { return }
         let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime, lastUpdated: Date())
         timeEntriesMap[newEntryTitle] = newEntry
-        startTimer(for: newEntryTitle) // Start the timer for the new entry
         notifyOther()
         saveData()
     }
@@ -47,20 +61,20 @@ class UserViewModel: ObservableObject {
     // calculateAverage returns the average time per entry.
     func calculateAverage(for title: String) -> TimeInterval{
         let timeEntry = timeEntriesMap[title]
-        var time = (timeEntry?.elapsedTime ?? 0)
+        var elapsed = Date().timeIntervalSince(timeEntry!.startTime)
         let historyCount = (timeEntry?.history?.count ?? 0) + 1
         if let history = timeEntry?.history {
             for entry in history {
-                time += entry.elapsedTime
+                elapsed += entry.elapsedTime
             }
         }
-        return time / Double(historyCount)
+        return elapsed / Double(historyCount)
     }
     
     // longestStreak returns the longest streak.
     func longestStreak(for title: String) -> TimeInterval{
         let timeEntry = timeEntriesMap[title]
-        var longest = (timeEntry?.elapsedTime ?? 0)
+        var longest = Date().timeIntervalSince(timeEntry!.startTime)
         if let history = timeEntry?.history {
             for entry in history {
                 if entry.elapsedTime > longest{
@@ -69,34 +83,6 @@ class UserViewModel: ObservableObject {
             }
         }
         return longest
-    }
-    
-    func startTimer(for title: String) {
-        print("startTimer called for:",title)
-        // Updates elapsed time every second.
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            let currentTime = Date()
-            let startTime = self.timeEntriesMap[title]?.startTime
-            let isPaused = self.timeEntriesMap[title]?.isPaused ?? false
-            if (isPaused){
-                self.timeEntriesMap[title]?.elapsedTime = 0
-                return
-            }
-            else{
-                self.timeEntriesMap[title]?.elapsedTime = currentTime.timeIntervalSince(startTime!)
-            }
-        }
-    }
-    
-    func startTimers() {
-        for key in timeEntriesMap.keys{
-            let isPaused = timeEntriesMap[key]?.isPaused ?? false
-            print("timer \(key) , isPaused = \(isPaused)")
-            if !(isPaused){
-                startTimer(for: key)
-            }
-        }
-        saveData()
     }
 
     func resetTimer(for key: String, reason: String, resetTime: Date) {
@@ -127,7 +113,6 @@ class UserViewModel: ObservableObject {
                 entry.history?.append(newHistory)
             }
             entry.isPaused = true
-            entry.elapsedTime = 0
             entry.lastUpdated = Date()
             timeEntriesMap[key] = entry
         } else {
@@ -190,7 +175,6 @@ class UserViewModel: ObservableObject {
         }
         timeEntriesMap = updated
         saveData()
-        startTimers()
     }
     
     func notifyWatch() {

@@ -20,7 +20,7 @@ struct historicalView: View {
                         .foregroundColor(.black)
                     let average = viewModel.calculateAverage(for: key)
                     let longest = viewModel.longestStreak(for: key)
-                    let current = viewModel.timeEntriesMap[key]!.elapsedTime
+                    let current = Date().timeIntervalSince(viewModel.timeEntriesMap[key]!.startTime)
                     VStack{
                         HStack {
                             Text("Average: ")

@@ -11,7 +11,7 @@ import SwiftUI
 struct TimerEntry : Codable, Equatable{
     let title: String
     var startTime: Date
-    var elapsedTime: TimeInterval = 0
+    // var elapsedTime: TimeInterval = 0
     var rules: String?
     var history: [perItemTimerEntry]?
     var isPaused: Bool?

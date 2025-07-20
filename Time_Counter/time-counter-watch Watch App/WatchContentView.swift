@@ -51,6 +51,15 @@ struct ContentView: View {
         .onChange(of: connectivity.receivedData) {
             viewModel.updateTimeEntriesMap(connectivity.receivedData)
         }
+        .onChange(of: viewModel.timeEntriesMap){
+            connectivity.sendUpdateToiOS(timeEntriesMap: viewModel.timeEntriesMap)
+        }
+        .onAppear {
+            viewModel.startUpdatingTime()
+        }
+        .onDisappear {
+            viewModel.stopUpdatingTime()
+        }
         .background(
             ZStack {
                 Image("Seedling")

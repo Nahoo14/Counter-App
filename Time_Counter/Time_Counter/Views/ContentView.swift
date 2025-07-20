@@ -3,13 +3,12 @@ import SwiftUI
 struct ContentView: View {
     
     /*
-     * Bug where I update the watchos while ios is not active.
      * Publish
      * Settings section
      * Iphone 16 and more fix
+     * Widget
      * Theme
      * Parent child mode
-     * Get Feedback
      * Reminder
     */
     
@@ -50,9 +49,16 @@ struct ContentView: View {
                 }
                 .onAppear{
                     connectivity.sendUpdateToWatch(timeEntriesMap: timeEntriesMap)
+                    viewModel.startUpdatingTime()
+                }
+                .onDisappear {
+                    viewModel.stopUpdatingTime()
                 }
                 .onChange(of: connectivity.receivedData) { newData in
                     viewModel.updateTimeEntriesMap(newData)
+                }
+                .onChange(of: timeEntriesMap){ newMap in
+                    connectivity.sendUpdateToWatch(timeEntriesMap: newMap)
                 }
                 .fullScreenCover(isPresented: $showResetTime, onDismiss: {
                     print("showResetTime = \(showResetTime)")
