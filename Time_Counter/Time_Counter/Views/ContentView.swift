@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ContentView: View {
     
-    /*
+    /* Updates watch but iphone is delayed.
      * Publish
      * Settings section
      * Iphone 16 and more fix

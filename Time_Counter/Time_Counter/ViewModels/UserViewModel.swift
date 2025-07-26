@@ -35,6 +35,7 @@ class UserViewModel: ObservableObject {
     
     init() {
         timeEntriesMap = Data.loadMapData()
+        notifyOther()
     }
     
     func saveData(){
