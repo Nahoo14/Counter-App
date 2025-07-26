@@ -42,6 +42,10 @@ struct ContentView: View {
                         viewModel.resetTimer(for: key, reason: userReason, resetTime: Date())
                         path.removeLast()
                     },
+                    onSubmitPlusPause:{
+                        viewModel.resetAndPauseTimer(for: key, reason: userReason, resetTime: Date())
+                        path.removeLast()
+                    },
                     onCancel: {
                         path.removeLast()
                     }
