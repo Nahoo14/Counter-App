@@ -2,14 +2,14 @@ import SwiftUI
 
 struct ContentView: View {
     
-    /* Updates watch but iphone is delayed.
+    /* Updates watch but iphone is delayed. (Bug reproducible with Airplane mode on phone.)
      * Publish
      * Settings section
      * Iphone 16 and more fix
      * Widget
-     * Theme
-     * Parent child mode
-     * Reminder
+     * Theme.
+     * Reminder.
+     * Post mortem section for each reset.
     */
     
     @StateObject var viewModel: UserViewModel
@@ -48,17 +48,11 @@ struct ContentView: View {
                     }
                 }
                 .onAppear{
-                    connectivity.sendUpdateToWatch(timeEntriesMap: timeEntriesMap)
+                    connectivity.syncState(timeEntriesMap: viewModel.timeEntriesMap)
                     viewModel.startUpdatingTime()
                 }
                 .onDisappear {
                     viewModel.stopUpdatingTime()
-                }
-                .onChange(of: connectivity.receivedData) { newData in
-                    viewModel.updateTimeEntriesMap(newData)
-                }
-                .onChange(of: timeEntriesMap){ newMap in
-                    connectivity.sendUpdateToWatch(timeEntriesMap: newMap)
                 }
                 .fullScreenCover(isPresented: $showResetTime, onDismiss: {
                     print("showResetTime = \(showResetTime)")

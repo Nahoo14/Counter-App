@@ -11,31 +11,43 @@ import WatchConnectivity
 class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
     static let shared = Connectivity()
     
-    @Published var receivedText = ""
     @Published var receivedData: [String: TimerEntry] = [:]
     private var pendingData: [String: TimerEntry] = [:]
-    override init(){
+    
+    private var session: WCSession {
+        WCSession.default
+    }
+    
+    override init() {
         super.init()
         
-        if WCSession.isSupported(){
-            let session = WCSession.default
+        if WCSession.isSupported() {
             session.delegate = self
             session.activate()
         }
     }
+    
+    // MARK: - WCSessionDelegate
+    
 #if os(iOS)
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) {
-    }
-    
-    func sessionDidBecomeInactive(_ session: WCSession) {
-    }
-    
-    func sessionDidDeactivate(_ session: WCSession) {
-    }
+    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {}
+    func sessionDidBecomeInactive(_ session: WCSession) {}
+    func sessionDidDeactivate(_ session: WCSession) {}
 #else
-    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: (any Error)?) {
+    func session(_ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?) {
+        if activationState == .activated, !pendingData.isEmpty {
+            syncState(timeEntriesMap: pendingData)
+            pendingData.removeAll()
+        }
     }
 #endif
+    
+    func sessionReachabilityDidChange(_ session: WCSession) {
+        if session.isReachable, !pendingData.isEmpty {
+            syncState(timeEntriesMap: pendingData)
+            pendingData.removeAll()
+        }
+    }
     
     func session(_ session: WCSession, didReceiveMessage message: [String: Any], replyHandler: @escaping ([String: Any]) -> Void) {
         Task { @MainActor in
@@ -43,11 +55,13 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
                 let data = try JSONSerialization.data(withJSONObject: message, options: [])
                 let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: data)
                 self.receivedData = decoded
-                print("received : \(decoded)")
+                print("Received message:", decoded)
+                replyHandler(["response": "Received"])
                 
-                replyHandler(["response": "Received time entries"])
+                // Persist this state so both sides stay in sync
+                try self.session.updateApplicationContext(["timeEntriesMap": data])
             } catch {
-                print("Decoding error: \(error)")
+                print("Decoding error:", error)
                 replyHandler(["response": "Failed to decode"])
             }
         }
@@ -58,65 +72,57 @@ class Connectivity: NSObject, ObservableObject, WCSessionDelegate {
             do {
                 let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: encoded)
                 DispatchQueue.main.async {
-                    print("watchOS received updated map: \(decoded)")
+                    print("Received appContext update:", decoded)
                     self.receivedData = decoded
                 }
             } catch {
-                print("watchOS failed to decode timeEntriesMap: \(error)")
+                print("Failed to decode applicationContext:", error)
             }
-        } else {
-            print("pplicationContext didn't contain expected data")
         }
     }
     
-    // sends update to ios
-    func sendUpdateToiOS(timeEntriesMap: [String: TimerEntry]) {
-        if WCSession.default.isReachable {
-            do {
-                let data = try JSONEncoder().encode(timeEntriesMap)
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                    WCSession.default.sendMessage(json, replyHandler: { response in
-                        print("Sent data: \(timeEntriesMap) to iOS, response:", response)
-                    }, errorHandler: { error in
-                        print("Error sending to iOS:", error)
-                    })
-                }
-            } catch {
-                print("Failed to encode timeEntriesMap for iOS:", error)
-            }
-        } else {
-            print("iOS not reachable, saving for retry")
-            pendingData = timeEntriesMap
-        }
-    }
+    // MARK: - Sync Logic
     
-    // sends update to watchos
-    func sendUpdateToWatch(timeEntriesMap: [String: TimerEntry]) {
-        guard WCSession.default.activationState == .activated else {
-            print("WCSession not activated yet — storing for retry")
+    /// Preferred method: guaranteed delivery, keeps last known state
+    func syncState(timeEntriesMap: [String: TimerEntry]) {
+        guard session.activationState == .activated else {
+            print("WCSession not activated — storing for retry")
             pendingData = timeEntriesMap
             return
         }
         
         do {
             let data = try JSONEncoder().encode(timeEntriesMap)
-            try WCSession.default.updateApplicationContext(["timeEntriesMap": data])
-            print("Sent data: \(timeEntriesMap) to Watch using applicationContext")
+            try session.updateApplicationContext(["timeEntriesMap": data])
+            print("Synced state via applicationContext")
         } catch {
-            print("Failed to send update: \(error)")
+            print("Failed to sync state:", error)
             pendingData = timeEntriesMap
         }
     }
     
-    func sessionReachabilityDidChange(_ session: WCSession) {
-        if session.isReachable {
-            if pendingData != [:]{
-#if os(iOS)
-#else
-                sendUpdateToiOS(timeEntriesMap: pendingData)
-                print("availaibility changed, sending pendingData: \(pendingData)")
-#endif
+    /// Optional: real-time push, falls back to appContext
+    func sendRealtimeUpdate(timeEntriesMap: [String: TimerEntry]) {
+        guard session.activationState == .activated else {
+            pendingData = timeEntriesMap
+            return
+        }
+        
+        do {
+            let data = try JSONEncoder().encode(timeEntriesMap)
+            if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                session.sendMessage(json, replyHandler: { response in
+                    print("Realtime sync success:", response)
+                }, errorHandler: { error in
+                    print("SendMessage failed:", error)
+                })
             }
+            
+            // Always persist state too
+            try session.updateApplicationContext(["timeEntriesMap": data])
+        } catch {
+            print("Encoding failed:", error)
+            pendingData = timeEntriesMap
         }
     }
 }

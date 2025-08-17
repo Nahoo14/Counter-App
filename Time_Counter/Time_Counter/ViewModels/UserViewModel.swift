@@ -7,6 +7,7 @@
 
 import SwiftUI
 import WatchConnectivity
+import Combine
 
 class UserViewModel: ObservableObject {
 
@@ -18,6 +19,22 @@ class UserViewModel: ObservableObject {
     private var timer : Timer? = nil
     
     var Data = DataManager()
+    
+    init() {
+        timeEntriesMap = Data.loadMapData()
+        notifyOther()
+        
+        // Keep this model in sync when connectivity updates
+        connectivity.$receivedData
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] newData in
+                guard let self = self else { return }
+                self.updateTimeEntriesMap(newData)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private var cancellables = Set<AnyCancellable>()
     
     func startUpdatingTime() {
         timer?.invalidate()
@@ -33,10 +50,6 @@ class UserViewModel: ObservableObject {
         timer = nil
     }
     
-    init() {
-        timeEntriesMap = Data.loadMapData()
-        notifyOther()
-    }
     
     func saveData(){
         Data.timeEntriesMap = timeEntriesMap
@@ -178,21 +191,23 @@ class UserViewModel: ObservableObject {
         saveData()
     }
     
-    func notifyWatch() {
-        print("sending \(timeEntriesMap) to watch.")
-        connectivity.sendUpdateToWatch(timeEntriesMap: self.timeEntriesMap)
-    }
-    
-    func notifyiOS() {
-        print("sending \(timeEntriesMap) to ios")
-        connectivity.sendUpdateToiOS(timeEntriesMap: self.timeEntriesMap)
-    }
+//    func notifyWatch() {
+//        print("sending \(timeEntriesMap) to watch.")
+//        connectivity.sendUpdateToWatch(timeEntriesMap: self.timeEntriesMap)
+//    }
+//    
+//    func notifyiOS() {
+//        print("sending \(timeEntriesMap) to ios")
+//        connectivity.sendUpdateToiOS(timeEntriesMap: self.timeEntriesMap)
+//    }
     
     func notifyOther(){
-#if os(iOS)
-        notifyWatch()
-#else
-        notifyiOS()
-#endif
+        connectivity.syncState(timeEntriesMap: timeEntriesMap)
+        connectivity.sendRealtimeUpdate(timeEntriesMap: timeEntriesMap)
+//#if os(iOS)
+//        notifyWatch()
+//#else
+//        notifyiOS()
+//#endif
     }
 }
