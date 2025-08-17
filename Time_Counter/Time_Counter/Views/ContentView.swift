@@ -2,14 +2,14 @@ import SwiftUI
 
 struct ContentView: View {
     
-    /* Updates watch but iphone is delayed. (Bug reproducible with Airplane mode on phone.)
+    /*
      * Publish
+     * Post mortem section for each reset
      * Settings section
      * Iphone 16 and more fix
      * Widget
-     * Theme.
-     * Reminder.
-     * Post mortem section for each reset.
+     * Theme
+     * Reminder
     */
     
     @StateObject var viewModel: UserViewModel

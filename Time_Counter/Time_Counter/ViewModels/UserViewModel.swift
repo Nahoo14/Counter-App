@@ -10,7 +10,7 @@ import WatchConnectivity
 import Combine
 
 class UserViewModel: ObservableObject {
-
+    
     @Published var timeEntriesMap : [String : TimerEntry] = [:]
     @Published var timePulse = Date()
     
@@ -104,7 +104,7 @@ class UserViewModel: ObservableObject {
         }
         return longest
     }
-
+    
     func resetTimer(for key: String, reason: String, resetTime: Date) {
         if var entry = timeEntriesMap[key] {
             let newHistory = perItemTimerEntry(startTime: entry.startTime, endTime: resetTime, elapsedTime: resetTime.timeIntervalSince(entry.startTime), resetReason: reason)
@@ -197,23 +197,8 @@ class UserViewModel: ObservableObject {
         saveData()
     }
     
-//    func notifyWatch() {
-//        print("sending \(timeEntriesMap) to watch.")
-//        connectivity.sendUpdateToWatch(timeEntriesMap: self.timeEntriesMap)
-//    }
-//    
-//    func notifyiOS() {
-//        print("sending \(timeEntriesMap) to ios")
-//        connectivity.sendUpdateToiOS(timeEntriesMap: self.timeEntriesMap)
-//    }
-    
     func notifyOther(){
         connectivity.syncState(timeEntriesMap: timeEntriesMap)
-        connectivity.sendRealtimeUpdate(timeEntriesMap: timeEntriesMap)
-//#if os(iOS)
-//        notifyWatch()
-//#else
-//        notifyiOS()
-//#endif
+        // connectivity.sendRealtimeUpdate(timeEntriesMap: timeEntriesMap)
     }
 }
