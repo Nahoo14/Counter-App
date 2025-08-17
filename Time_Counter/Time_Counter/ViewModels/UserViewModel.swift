@@ -19,22 +19,28 @@ class UserViewModel: ObservableObject {
     private var timer : Timer? = nil
     
     var Data = DataManager()
+    private var cancellables = Set<AnyCancellable>()
     
     init() {
+        // 1. Load local data first
         timeEntriesMap = Data.loadMapData()
-        notifyOther()
         
-        // Keep this model in sync when connectivity updates
+        // 2. Subscribe to connectivity, but ignore empty states
         connectivity.$receivedData
             .receive(on: DispatchQueue.main)
             .sink { [weak self] newData in
                 guard let self = self else { return }
+                
+                // Don’t overwrite with empty dict (happens on startup)
+                guard !newData.isEmpty else { return }
+                
                 self.updateTimeEntriesMap(newData)
             }
             .store(in: &cancellables)
+        
+        // 3. Notify the other device of *our* current local state
+        notifyOther()
     }
-    
-    private var cancellables = Set<AnyCancellable>()
     
     func startUpdatingTime() {
         timer?.invalidate()
