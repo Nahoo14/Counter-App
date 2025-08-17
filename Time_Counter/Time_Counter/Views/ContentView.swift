@@ -47,8 +47,10 @@ struct ContentView: View {
                         .contentShape(Rectangle())
                     }
                 }
-                .onAppear{
+                .onChange(of: viewModel.timeEntriesMap) { _ in
                     connectivity.syncState(timeEntriesMap: viewModel.timeEntriesMap)
+                }
+                .onAppear{
                     viewModel.startUpdatingTime()
                 }
                 .onDisappear {
