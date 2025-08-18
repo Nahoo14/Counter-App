@@ -24,22 +24,9 @@ class UserViewModel: ObservableObject {
     init() {
         // 1. Load local data first
         timeEntriesMap = Data.loadMapData()
-        
-        // 2. Subscribe to connectivity, but ignore empty states
-        connectivity.$receivedData
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] newData in
-                guard let self = self else { return }
-                
-                // Don’t overwrite with empty dict (happens on startup)
-                guard !newData.isEmpty else { return }
-                
-                self.updateTimeEntriesMap(newData)
-            }
-            .store(in: &cancellables)
-        
-        // 3. Notify the other device of *our* current local state
-        notifyOther()
+        Connectivity.shared.onReceiveState = { [weak self] remoteMap in
+                self?.updateTimeEntriesMap(remoteMap) // uses your lastUpdated merge logic
+        }
     }
     
     func startUpdatingTime() {
@@ -185,11 +172,13 @@ class UserViewModel: ObservableObject {
     func updateTimeEntriesMap(_ newMap: [String: TimerEntry]) {
         // check last updated time and update here.
         var updated = newMap
-        for (key,val) in newMap{
+        for (key,newVal) in newMap{
             if let existing = timeEntriesMap[key]{
-                if val.lastUpdated > existing.lastUpdated{
-                    updated[key] = val
+                if newVal.lastUpdated > existing.lastUpdated{
+                    updated[key] = newVal
                     print("Updated key \(key)")
+                }else{
+                    updated[key] = existing
                 }
             }
         }
