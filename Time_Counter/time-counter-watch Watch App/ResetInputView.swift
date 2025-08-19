@@ -21,21 +21,18 @@ struct ResetInputView: View {
             }
 
             Section {
-                VStack(spacing: 4) {
+                VStack(spacing: 8) {
+                    // Primary action (full width)
                     Button("Reset") {
                         onSubmit()
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.mini)
+                    .frame(maxWidth: .infinity)
 
+                    // Secondary action (smaller, less emphasized)
                     Button("Reset + Pause") {
                         onSubmitPlusPause()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.mini)
-
-                    Button("Cancel", role: .cancel) {
-                        onCancel()
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.mini)
