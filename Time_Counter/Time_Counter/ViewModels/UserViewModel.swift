@@ -162,6 +162,7 @@ class UserViewModel: ObservableObject {
     
     func addRule(rule : String, for title: String){
         timeEntriesMap[title]?.rules = rule
+        timeEntriesMap[title]?.lastUpdated = Date()
         saveData()
     }
     

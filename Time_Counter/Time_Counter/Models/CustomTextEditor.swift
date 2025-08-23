@@ -14,16 +14,25 @@ struct CustomTextEditor: UIViewRepresentable {
     func makeUIView(context: Context) -> UITextView {
         let textView = UITextView()
         textView.isScrollEnabled = true
-        textView.backgroundColor = UIColor.clear // Let the background be controlled by the parent
-        textView.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8) // Add padding
+        textView.backgroundColor = .clear
+        textView.textContainerInset = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
         textView.delegate = context.coordinator
         textView.font = UIFont.systemFont(ofSize: 16)
-        textView.textColor = UIColor.label // Adaptive text color for dark/light modes
+        textView.textColor = .label
+        textView.autocorrectionType = .default
+        textView.smartDashesType = .yes
+        textView.smartQuotesType = .yes
+        textView.smartInsertDeleteType = .yes
+        textView.keyboardDismissMode = .interactive
         return textView
     }
 
     func updateUIView(_ uiView: UITextView, context: Context) {
-        uiView.text = text
+        if uiView.text != text {
+            let selectedRange = uiView.selectedRange
+            uiView.text = text
+            uiView.selectedRange = selectedRange
+        }
     }
 
     func makeCoordinator() -> Coordinator {
