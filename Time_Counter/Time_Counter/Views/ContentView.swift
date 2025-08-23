@@ -53,9 +53,6 @@ struct ContentView: View {
                 .onAppear{
                     viewModel.startUpdatingTime()
                 }
-                .onDisappear {
-                    viewModel.stopUpdatingTime()
-                }
                 .fullScreenCover(isPresented: $showResetTime, onDismiss: {
                     print("showResetTime = \(showResetTime)")
                     print("Sheet dismissed")
