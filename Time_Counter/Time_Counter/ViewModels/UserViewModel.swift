@@ -31,10 +31,17 @@ class UserViewModel: ObservableObject {
     
     func startUpdatingTime() {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
-            DispatchQueue.main.async {
-                self.timePulse = Date() // Update triggers SwiftUI refresh
+        
+        let now = Date()
+        let nextFullSecond = Date(timeIntervalSince1970: floor(now.timeIntervalSince1970) + 1)
+        let delay = nextFullSecond.timeIntervalSince(now)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            self.timePulse = Date()  // initial aligned tick
+            self.timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
+                self.timePulse = Date()
             }
+            RunLoop.current.add(self.timer!, forMode: .common)
         }
     }
     
