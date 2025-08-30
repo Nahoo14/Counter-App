@@ -22,7 +22,7 @@ struct historicalView: View {
                     let longest = viewModel.longestStreak(for: key)
                     let current = Date().timeIntervalSince(viewModel.timeEntriesMap[key]!.startTime)
                     VStack{
-                        HStack {
+                        HStack(alignment: .firstTextBaseline) {
                             Text("Average: ")
                                 .font(.headline)
                                 .foregroundColor(.red)
@@ -30,8 +30,9 @@ struct historicalView: View {
                                 .font(.body)
                                 .foregroundColor(.yellow)
                                 .bold()
+                                .multilineTextAlignment(.leading)
                         }
-                        HStack {
+                        HStack(alignment: .firstTextBaseline) {
                             Text("Longest: ")
                                 .font(.headline)
                                 .foregroundColor(.red)
@@ -39,8 +40,9 @@ struct historicalView: View {
                                 .font(.body)
                                 .foregroundColor(.yellow)
                                 .bold()
+                                .multilineTextAlignment(.leading)
                         }
-                        HStack {
+                        HStack(alignment: .firstTextBaseline) {
                             Text("Current: ")
                                 .font(.headline)
                                 .foregroundColor(.red)
@@ -48,6 +50,7 @@ struct historicalView: View {
                                 .font(.body)
                                 .foregroundColor(.yellow)
                                 .bold()
+                                .multilineTextAlignment(.leading)
                         }
                     }
                     .background(

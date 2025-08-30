@@ -4,6 +4,7 @@
 //
 //  Created by Baby Tinishu on 4/19/25.
 //
+// Watch app will be paid.
 
 import SwiftUI
 

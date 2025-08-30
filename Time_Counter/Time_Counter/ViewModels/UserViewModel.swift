@@ -145,25 +145,42 @@ class UserViewModel: ObservableObject {
     
     
     func timeString(from elapsedTime: TimeInterval) -> String {
-        let days = Int(elapsedTime) / 86400
+        let years = Int(elapsedTime) / 31_536_000
+        let days = (Int(elapsedTime) % 31_536_000) / 86400
         let hours = (Int(elapsedTime) % 86400) / 3600
         let minutes = (Int(elapsedTime) % 3600) / 60
         let seconds = Int(elapsedTime) % 60
-        return String(format: "%d days, %02d:%02d:%02d", days, hours, minutes, seconds)
+        if years > 0 {
+            return "\(years)y \(days)d \(hours)h \(minutes)m \(seconds)s"
+        } else if days > 0 {
+            return "\(days)d \(hours)h \(minutes)m \(seconds)s"
+        }
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
     }
     
-    func timeStringEntries(for entry: TimerEntry, isPaused : Bool) -> String {
-        if isPaused{
+    func timeStringEntries(for entry: TimerEntry, isPaused: Bool) -> String {
+        if isPaused {
             return "Paused"
         }
+
         let elapsed = Date().timeIntervalSince(entry.startTime)
-        let days = Int(elapsed) / 86400
-        let hours = (Int(elapsed) % 86400) / 3600
-        let minutes = (Int(elapsed) % 3600) / 60
-        let seconds = Int(elapsed) % 60
-        let timeText = days > 0
-        ? String(format: "%d d\n%02d h\n%02d:%02d", days, hours, minutes, seconds)
-        : String(format: "%02d h\n%02d:%02d", hours, minutes, seconds)
+        let totalSeconds = Int(elapsed)
+        
+        let years = totalSeconds / 31_536_000
+        let days = (totalSeconds % 31_536_000) / 86_400
+        let hours = (totalSeconds % 86_400) / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
+
+        let timeText: String
+        if years > 0 {
+            timeText = String(format: "%d y\n%d d\n%02d h\n%02d:%02d", years, days, hours, minutes, seconds)
+        } else if days > 0 {
+            timeText = String(format: "%d d\n%02d h\n%02d:%02d", days, hours, minutes, seconds)
+        } else {
+            timeText = String(format: "%02d h\n%02d:%02d", hours, minutes, seconds)
+        }
+
         return timeText
     }
     
