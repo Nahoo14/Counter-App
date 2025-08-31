@@ -51,12 +51,14 @@ struct ResetTimeView: View {
                         viewModel.resetTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)
                         showReasonAlert = false
                         showResetTime = false
+                        userReason = ""
                         selectedDate = Date()
                     }
                     Button("Reset + Pause"){
                         viewModel.resetAndPauseTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)
                         showReasonAlert = false
                         showResetTime = false
+                        userReason = ""
                         selectedDate = Date()
                     }
                     Button("Cancel", role: .cancel) {}
