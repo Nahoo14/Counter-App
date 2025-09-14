@@ -3,10 +3,9 @@ import SwiftUI
 struct ContentView: View {
     
     /*
-     * Publish
-     * Post mortem section for each reset
+     * Parent chld mode
      * Settings section
-     * Iphone 16 and more fix
+     * Publish
      * Widget
      * Theme
      * Reminder

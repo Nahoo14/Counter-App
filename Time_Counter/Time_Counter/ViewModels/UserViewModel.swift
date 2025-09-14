@@ -175,12 +175,9 @@ class UserViewModel: ObservableObject {
         let timeText: String
         if years > 0 {
             timeText = String(format: "%d y\n%d d\n%02d h\n%02d:%02d", years, days, hours, minutes, seconds)
-        } else if days > 0 {
-            timeText = String(format: "%d d\n%02d h\n%02d:%02d", days, hours, minutes, seconds)
         } else {
-            timeText = String(format: "%02d h\n%02d:%02d", hours, minutes, seconds)
+            timeText = String(format: "%d d\n%02d h\n%02d:%02d", days, hours, minutes, seconds)
         }
-
         return timeText
     }
     
