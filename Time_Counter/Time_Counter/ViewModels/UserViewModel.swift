@@ -75,8 +75,9 @@ class UserViewModel: ObservableObject {
     // calculateAverage returns the average time per entry.
     func calculateAverage(for title: String) -> TimeInterval{
         let timeEntry = timeEntriesMap[title]
-        var elapsed = Date().timeIntervalSince(timeEntry!.startTime)
-        let historyCount = (timeEntry?.history?.count ?? 0) + 1
+        var elapsed = timeEntry?.isPaused ?? false ? 0 : Date().timeIntervalSince(timeEntry!.startTime)
+        // if ispaused don't add one because the current doesn't count for average calculation.
+        let historyCount = timeEntry?.isPaused ?? false ? (timeEntry?.history?.count ?? 0) : (timeEntry?.history?.count ?? 0) + 1
         if let history = timeEntry?.history {
             for entry in history {
                 elapsed += entry.elapsedTime
@@ -88,7 +89,7 @@ class UserViewModel: ObservableObject {
     // longestStreak returns the longest streak.
     func longestStreak(for title: String) -> TimeInterval{
         let timeEntry = timeEntriesMap[title]
-        var longest = Date().timeIntervalSince(timeEntry!.startTime)
+        var longest = timeEntry?.isPaused ?? false ? 0 : Date().timeIntervalSince(timeEntry!.startTime)
         if let history = timeEntry?.history {
             for entry in history {
                 if entry.elapsedTime > longest{

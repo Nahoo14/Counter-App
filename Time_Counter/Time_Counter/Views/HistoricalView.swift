@@ -20,7 +20,10 @@ struct historicalView: View {
                         .foregroundColor(.black)
                     let average = viewModel.calculateAverage(for: key)
                     let longest = viewModel.longestStreak(for: key)
-                    let current = Date().timeIntervalSince(viewModel.timeEntriesMap[key]!.startTime)
+                    let entry = viewModel.timeEntriesMap[key]!
+                    let current = Date().timeIntervalSince(entry.startTime)
+                    let endTime = Date().timeIntervalSince(entry.lastUpdated)
+                    let currentIsPaused = entry.isPaused
                     VStack{
                         HStack(alignment: .firstTextBaseline) {
                             Text("Average: ")
@@ -43,10 +46,10 @@ struct historicalView: View {
                                 .multilineTextAlignment(.leading)
                         }
                         HStack(alignment: .firstTextBaseline) {
-                            Text("Current: ")
+                            Text(currentIsPaused ?? false ? "Paused for: " : "Current: ")
                                 .font(.headline)
                                 .foregroundColor(.red)
-                            Text(viewModel.timeString(from: current))
+                            Text(currentIsPaused ?? false ? viewModel.timeString(from: endTime) : viewModel.timeString(from: current))
                                 .font(.body)
                                 .foregroundColor(.yellow)
                                 .bold()
