@@ -13,9 +13,13 @@ struct ContentView: View {
     
     @StateObject var viewModel: UserViewModel
     @StateObject var connectivity = Connectivity.shared
+    @State private var showRenameAlert = false
+    @State private var keyToRename: String? = nil
+    @State private var newName: String = ""
     
     var body: some View {
         let timeEntriesMap = viewModel.timeEntriesMap
+        
         
         NavigationStack {
             VStack {
@@ -37,6 +41,15 @@ struct ContentView: View {
                                     .foregroundColor(.blue)
                             }
                             .buttonStyle(.plain)
+                            .simultaneousGesture(
+                                LongPressGesture(minimumDuration: 0.7)
+                                    .onEnded { _ in
+                                        keyToRename = key
+                                        newName = key
+                                        showRenameAlert = true
+                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    }
+                            )
                             let isPaused = timeEntriesMap[key]?.isPaused ?? false
                             Text(viewModel.timeStringEntries(for: viewModel.timeEntriesMap[key]!, isPaused: isPaused))
                                 .font(.system(size: 15, weight: .bold, design: .monospaced))
@@ -65,6 +78,24 @@ struct ContentView: View {
                     )
                 }
                 .scrollContentBackground(.hidden)
+                .alert("Rename Streak", isPresented: $showRenameAlert) {
+                    TextField("Enter new name", text: $newName)
+                    Button("Save", role: .none) {
+                        if let oldKey = keyToRename, !newName.isEmpty, newName != oldKey {
+                            viewModel.renameStreak(oldKey: oldKey, newKey: newName)
+                        }
+                        keyToRename = nil
+                        newName = ""
+                    }
+                    Button("Cancel", role: .cancel) {
+                        keyToRename = nil
+                        newName = ""
+                    }
+                } message: {
+                    if let key = keyToRename {
+                        Text("Rename “\(key)” to:")
+                    }
+                }
                 EntryView(viewModel: viewModel)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -79,6 +110,7 @@ struct ContentView: View {
             )
         }
     }
+
     
     // resetButton variables
     @State private var showResetTime: Bool = false

@@ -213,4 +213,11 @@ class UserViewModel: ObservableObject {
         connectivity.syncState(timeEntriesMap: timeEntriesMap)
         // connectivity.sendRealtimeUpdate(timeEntriesMap: timeEntriesMap)
     }
+    
+    func renameStreak(oldKey: String, newKey: String) {
+        guard let entry = timeEntriesMap.removeValue(forKey: oldKey) else { return }
+        timeEntriesMap[newKey] = entry
+        saveData()
+        connectivity.syncState(timeEntriesMap: timeEntriesMap)
+    }
 }
