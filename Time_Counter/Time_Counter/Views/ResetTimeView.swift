@@ -43,9 +43,9 @@ struct ResetTimeView: View {
             }
         }
         .padding()
-        .alert("Enter reason", isPresented: $showReasonAlert) {
+        .alert("Enter notes", isPresented: $showReasonAlert) {
             VStack {
-                TextField("Reason", text: $userReason)
+                TextField("notes", text: $userReason)
                 VStack {
                     Button("Reset") {
                         viewModel.resetTimer(for: selectedKey, reason: userReason, resetTime: selectedDate)

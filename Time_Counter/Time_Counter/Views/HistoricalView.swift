@@ -6,118 +6,109 @@ struct HistoricalView: View {
     var key: String
 
     @State private var selectedEntryIndex: Int? = nil
-    @State private var showEditReasonView = false
+    @State private var showEditReasonSheet: Bool = false
 
     var body: some View {
-        ZStack {
-            VStack {
-                Text("\(key) history")
-                    .font(.system(size: 20, weight: .bold, design: .monospaced))
-                    .foregroundColor(.black)
-
-                let average = viewModel.calculateAverage(for: key)
-                let longest = viewModel.longestStreak(for: key)
-                let entry = viewModel.timeEntriesMap[key]!
-                let current = Date().timeIntervalSince(entry.startTime)
-                let endTime = Date().timeIntervalSince(entry.lastUpdated)
-                let currentIsPaused = entry.isPaused
-
+        NavigationStack {
+            ZStack {
                 VStack {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("Average: ")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                        Text("\(viewModel.timeString(from: average)) (per reset)")
-                            .font(.body)
-                            .foregroundColor(.yellow)
-                            .bold()
-                    }
+                    Text("\(key) history")
+                        .font(.system(size: 20, weight: .bold, design: .monospaced))
+                        .foregroundColor(.black)
 
-                    HStack(alignment: .firstTextBaseline) {
-                        Text("Longest: ")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                        Text(viewModel.timeString(from: longest))
-                            .font(.body)
-                            .foregroundColor(.yellow)
-                            .bold()
-                    }
+                    let average = viewModel.calculateAverage(for: key)
+                    let longest = viewModel.longestStreak(for: key)
+                    let entry = viewModel.timeEntriesMap[key]!
+                    let current = Date().timeIntervalSince(entry.startTime)
+                    let endTime = Date().timeIntervalSince(entry.lastUpdated)
+                    let currentIsPaused = entry.isPaused
 
-                    HStack(alignment: .firstTextBaseline) {
-                        Text(currentIsPaused ?? false ? "Paused for: " : "Current: ")
-                            .font(.headline)
-                            .foregroundColor(.red)
-                        Text(currentIsPaused ?? false ? viewModel.timeString(from: endTime) : viewModel.timeString(from: current))
-                            .font(.body)
-                            .foregroundColor(.yellow)
-                            .bold()
+                    VStack {
+                        statRow(title: "Average:", value: "\(viewModel.timeString(from: average)) (per reset)")
+                        statRow(title: "Longest:", value: viewModel.timeString(from: longest))
+                        statRow(
+                            title: currentIsPaused ?? false ? "Paused for:" : "Current:",
+                            value: currentIsPaused ?? false
+                                ? viewModel.timeString(from: endTime)
+                                : viewModel.timeString(from: current)
+                        )
                     }
+                    .background(RoundedRectangle(cornerRadius: 5).fill(Color.black))
+                    .padding(8)
+
+                    Spacer()
+
+                    List {
+                        if let history = history, !history.isEmpty {
+                            ForEach(Array(history.enumerated()), id: \.1) { index, item in
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text("Reset Reason - \(index + 1)")
+                                        .font(.headline)
+                                        .foregroundColor(.red)
+
+                                    Text(item.resetReason.isEmpty ? "Tap to add notes..." : item.resetReason)
+                                        .font(.body)
+                                        .foregroundColor(.blue)
+                                        .padding(.vertical, 4)
+
+                                    Text("Duration:")
+                                        .font(.headline)
+                                        .foregroundColor(.red)
+                                    Text("\(item.startTime) - \(item.endTime)")
+
+                                    Text("Time Elapsed:")
+                                        .font(.headline)
+                                        .foregroundColor(.red)
+                                    Text(viewModel.timeString(from: item.elapsedTime))
+                                        .font(.body)
+                                        .foregroundColor(.green)
+                                        .bold()
+                                }
+                                .padding(10)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    selectedEntryIndex = index
+                                    showEditReasonSheet = true
+                                }
+                            }
+                        } else {
+                            Text("No history available")
+                                .font(.system(size: 15))
+                        }
+                    }
+                    .scrollContentBackground(.hidden)
                 }
                 .background(
-                    RoundedRectangle(cornerRadius: 5)
-                        .fill(Color.black)
+                    Image("Flower")
+                        .resizable()
+                        .scaledToFill()
+                        .ignoresSafeArea()
                 )
-                .padding(8)
-
-                Spacer()
-
-                List {
-                    if let history = history, !history.isEmpty {
-                        ForEach(Array(history.enumerated()), id: \.1) { index, item in
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text("Reset reason - \(index + 1): ")
-                                    .font(.headline)
-                                    .foregroundColor(.red) +
-                                Text(item.resetReason)
-                                    .font(.body)
-                                    .foregroundColor(.blue)
-                                    .bold()
-
-                                Text("Duration: ")
-                                    .font(.headline)
-                                    .foregroundColor(.red) +
-                                Text("\(item.startTime) - \(item.endTime)")
-
-                                Text("Time elapsed: ")
-                                    .font(.headline)
-                                    .foregroundColor(.red) +
-                                Text(viewModel.timeString(from: item.elapsedTime))
-                                    .font(.body)
-                                    .foregroundColor(.green)
-                                    .bold()
-                            }
-                            .padding(10)
-                            .listRowInsets(EdgeInsets())
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                selectedEntryIndex = index
-                                showEditReasonView = true
-                            }
-                        }
-                    } else {
-                        Text("No history available")
-                            .font(.system(size: 15))
-                    }
+            }
+            .sheet(isPresented: $showEditReasonSheet) {
+                if let idx = selectedEntryIndex,
+                   let entry = history?[idx] {
+                    EditResetReasonView(
+                        viewModel: viewModel,
+                        key: key,
+                        entryIndex: idx,
+                        entry: entry
+                    )
                 }
-                .scrollContentBackground(.hidden)
             }
-            .background(
-                Image("Flower")
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea(edges: .all)
-            )
         }
-        .sheet(isPresented: $showEditReasonView) {
-            if let index = selectedEntryIndex,
-               let entry = history?[index] {
-                EditResetReasonView(
-                    viewModel: viewModel,
-                    key: key,
-                    index: index,
-                    entry: entry
-                )
-            }
+    }
+
+    private func statRow(title: String, value: String) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(title)
+                .font(.headline)
+                .foregroundColor(.red)
+            Text(value)
+                .font(.body)
+                .foregroundColor(.yellow)
+                .bold()
+                .multilineTextAlignment(.leading)
         }
     }
 }
