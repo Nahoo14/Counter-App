@@ -42,7 +42,7 @@ struct HistoricalView: View {
                         if let history = history, !history.isEmpty {
                             ForEach(Array(history.enumerated()), id: \.1) { index, item in
                                 VStack(alignment: .leading, spacing: 10) {
-                                    Text("Reset Reason - \(index + 1)")
+                                    Text("Reset \(index + 1) notes")
                                         .font(.headline)
                                         .foregroundColor(.red)
 

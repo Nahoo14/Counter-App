@@ -50,7 +50,7 @@ struct EditResetReasonView: View {
                 .padding(.bottom, 8)
             }
             .padding()
-            .navigationTitle("Edit Reset Reason")
+            .navigationTitle("Reset Notes")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
