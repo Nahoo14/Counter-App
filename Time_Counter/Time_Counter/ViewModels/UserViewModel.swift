@@ -189,7 +189,7 @@ class UserViewModel: ObservableObject {
     }
     
     func getRules(for key: String) -> String? {
-        return timeEntriesMap[key]?.rules // Return empty string if no rule exists
+        return timeEntriesMap[key]?.rules
     }
     
     func updateTimeEntriesMap(_ newMap: [String: TimerEntry]) {
@@ -217,6 +217,19 @@ class UserViewModel: ObservableObject {
     func renameStreak(oldKey: String, newKey: String) {
         guard let entry = timeEntriesMap.removeValue(forKey: oldKey) else { return }
         timeEntriesMap[newKey] = entry
+        saveData()
+        connectivity.syncState(timeEntriesMap: timeEntriesMap)
+    }
+    
+    func updateResetReason(for key: String, at index: Int, with newReason: String) {
+        guard var entry = timeEntriesMap[key] else { return }
+        var historyArray = entry.history ?? []
+        guard historyArray.indices.contains(index) else { return }
+
+        historyArray[index].resetReason = newReason
+        entry.history = historyArray
+        timeEntriesMap[key] = entry
+
         saveData()
         connectivity.syncState(timeEntriesMap: timeEntriesMap)
     }

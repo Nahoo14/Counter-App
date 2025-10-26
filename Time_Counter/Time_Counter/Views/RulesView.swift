@@ -52,7 +52,7 @@ struct rulesView : View {
         // Navigate to the per item view.
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                NavigationLink(destination: historicalView(history: viewModel.timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {
+                NavigationLink(destination: HistoricalView(history: viewModel.timeEntriesMap[key]?.history, viewModel: viewModel, key: key)) {
                     Text("History")
                         .foregroundColor(.blue).bold()
                 }
