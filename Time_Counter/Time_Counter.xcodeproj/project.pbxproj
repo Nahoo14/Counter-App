@@ -86,6 +86,7 @@
 				ViewModels/DataManager.swift,
 				ViewModels/EncryptionManager.swift,
 				ViewModels/UserViewModel.swift,
+				Views/AppTheme.swift,
 			);
 			target = 892ECD812DB42F4200CD02F0 /* time-counter-watch Watch App */;
 		};

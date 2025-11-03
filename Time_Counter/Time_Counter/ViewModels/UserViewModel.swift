@@ -6,38 +6,56 @@
 //
 
 import SwiftUI
-import WatchConnectivity
 import Combine
 
 class UserViewModel: ObservableObject {
     
-    @Published var timeEntriesMap : [String : TimerEntry] = [:]
+    // MARK: - Published Properties
+    @Published var timeEntriesMap: [String: TimerEntry] = [:]
     @Published var timePulse = Date()
     
-    var connectivity = Connectivity.shared
-    
-    private var timer : Timer? = nil
-    
-    var Data = DataManager()
-    private var cancellables = Set<AnyCancellable>()
-    
-    init() {
-        // 1. Load local data first
-        timeEntriesMap = Data.loadMapData()
-        Connectivity.shared.onReceiveState = { [weak self] remoteMap in
-                self?.updateTimeEntriesMap(remoteMap) // uses your lastUpdated merge logic
+    @Published var selectedTheme: AppTheme = .system {
+        didSet {
+            saveThemeToUserDefaults()
         }
     }
     
+    var connectivity = Connectivity.shared
+    
+    private var timer: Timer? = nil
+    var Data = DataManager()
+    private var cancellables = Set<AnyCancellable>()
+    
+    // MARK: - Init
+    init() {
+        timeEntriesMap = Data.loadMapData()       // Load saved timers
+        loadThemeFromUserDefaults()               // Load saved theme
+        Connectivity.shared.onReceiveState = { [weak self] remoteMap in
+            self?.updateTimeEntriesMap(remoteMap)
+        }
+    }
+    
+    // MARK: - Theme Persistence
+    private func saveThemeToUserDefaults() {
+        UserDefaults.standard.set(selectedTheme.rawValue, forKey: "app_theme")
+    }
+    
+    private func loadThemeFromUserDefaults() {
+        if let saved = UserDefaults.standard.string(forKey: "app_theme"),
+           let theme = AppTheme(rawValue: saved) {
+            selectedTheme = theme
+        }
+    }
+    
+    // MARK: - Timer Handling
     func startUpdatingTime() {
         timer?.invalidate()
-        
         let now = Date()
         let nextFullSecond = Date(timeIntervalSince1970: floor(now.timeIntervalSince1970) + 1)
         let delay = nextFullSecond.timeIntervalSince(now)
         
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-            self.timePulse = Date()  // initial aligned tick
+            self.timePulse = Date()
             self.timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { _ in
                 self.timePulse = Date()
             }
@@ -50,10 +68,14 @@ class UserViewModel: ObservableObject {
         timer = nil
     }
     
-    
-    func saveData(){
+    // MARK: - Data Handling
+    func saveData() {
         Data.timeEntriesMap = timeEntriesMap
         Data.saveMapData()
+    }
+    
+    func notifyOther() {
+        connectivity.syncState(timeEntriesMap: timeEntriesMap)
     }
     
     func addEntry(newEntryTitle: String, startTime: Date) {
@@ -64,7 +86,7 @@ class UserViewModel: ObservableObject {
         saveData()
     }
     
-    func resumeTimer(for key: String){
+    func resumeTimer(for key: String) {
         timeEntriesMap[key]?.isPaused = false
         timeEntriesMap[key]?.startTime = Date()
         timeEntriesMap[key]?.lastUpdated = Date()
@@ -72,68 +94,34 @@ class UserViewModel: ObservableObject {
         saveData()
     }
     
-    // calculateAverage returns the average time per entry.
-    func calculateAverage(for title: String) -> TimeInterval{
-        let timeEntry = timeEntriesMap[title]
-        var elapsed = timeEntry?.isPaused ?? false ? 0 : Date().timeIntervalSince(timeEntry!.startTime)
-        // if ispaused don't add one because the current doesn't count for average calculation.
-        let historyCount = timeEntry?.isPaused ?? false ? (timeEntry?.history?.count ?? 0) : (timeEntry?.history?.count ?? 0) + 1
-        if let history = timeEntry?.history {
-            for entry in history {
-                elapsed += entry.elapsedTime
-            }
-        }
-        return elapsed / Double(historyCount)
-    }
-    
-    // longestStreak returns the longest streak.
-    func longestStreak(for title: String) -> TimeInterval{
-        let timeEntry = timeEntriesMap[title]
-        var longest = timeEntry?.isPaused ?? false ? 0 : Date().timeIntervalSince(timeEntry!.startTime)
-        if let history = timeEntry?.history {
-            for entry in history {
-                if entry.elapsedTime > longest{
-                    longest = entry.elapsedTime
-                }
-            }
-        }
-        return longest
-    }
-    
     func resetTimer(for key: String, reason: String, resetTime: Date) {
-        if var entry = timeEntriesMap[key] {
-            let newHistory = perItemTimerEntry(startTime: entry.startTime, endTime: resetTime, elapsedTime: resetTime.timeIntervalSince(entry.startTime), resetReason: reason)
-            if entry.history?.isEmpty ?? true {
-                entry.history = [newHistory]
-            } else {
-                entry.history?.append(newHistory)
-            }
-            entry.startTime = resetTime
-            entry.lastUpdated = Date()
-            timeEntriesMap[key] = entry
-        } else {
-            print("No entry found for key: \(key)")
-        }
-        print("map after adding history", timeEntriesMap)
+        guard var entry = timeEntriesMap[key] else { return }
+        let newHistory = perItemTimerEntry(
+            startTime: entry.startTime,
+            endTime: resetTime,
+            elapsedTime: resetTime.timeIntervalSince(entry.startTime),
+            resetReason: reason
+        )
+        entry.history = (entry.history ?? []) + [newHistory]
+        entry.startTime = resetTime
+        entry.lastUpdated = Date()
+        timeEntriesMap[key] = entry
         notifyOther()
         saveData()
     }
     
-    func resetAndPauseTimer(for key: String, reason: String, resetTime: Date){
-        if var entry = timeEntriesMap[key] {
-            let newHistory = perItemTimerEntry(startTime: entry.startTime, endTime: resetTime, elapsedTime: resetTime.timeIntervalSince(entry.startTime), resetReason: reason)
-            if entry.history?.isEmpty ?? true {
-                entry.history = [newHistory]
-            } else {
-                entry.history?.append(newHistory)
-            }
-            entry.isPaused = true
-            entry.lastUpdated = Date()
-            timeEntriesMap[key] = entry
-        } else {
-            print("No entry found for key: \(key)")
-        }
-        print("map after adding history", timeEntriesMap)
+    func resetAndPauseTimer(for key: String, reason: String, resetTime: Date) {
+        guard var entry = timeEntriesMap[key] else { return }
+        let newHistory = perItemTimerEntry(
+            startTime: entry.startTime,
+            endTime: resetTime,
+            elapsedTime: resetTime.timeIntervalSince(entry.startTime),
+            resetReason: reason
+        )
+        entry.history = (entry.history ?? []) + [newHistory]
+        entry.isPaused = true
+        entry.lastUpdated = Date()
+        timeEntriesMap[key] = entry
         notifyOther()
         saveData()
     }
@@ -144,76 +132,61 @@ class UserViewModel: ObservableObject {
         saveData()
     }
     
-    
-    func timeString(from elapsedTime: TimeInterval) -> String {
-        let years = Int(elapsedTime) / 31_536_000
-        let days = (Int(elapsedTime) % 31_536_000) / 86400
-        let hours = (Int(elapsedTime) % 86400) / 3600
-        let minutes = (Int(elapsedTime) % 3600) / 60
-        let seconds = Int(elapsedTime) % 60
-        if years > 0 {
-            return "\(years)y \(days)d \(hours)h \(minutes)m \(seconds)s"
-        } else if days > 0 {
-            return "\(days)d \(hours)h \(minutes)m \(seconds)s"
+    // MARK: - Stats
+    func calculateAverage(for title: String) -> TimeInterval {
+        guard let timeEntry = timeEntriesMap[title] else { return 0 }
+        var elapsed = timeEntry.isPaused ?? false ? 0 : Date().timeIntervalSince(timeEntry.startTime)
+        let historyCount = (timeEntry.history?.count ?? 0) + (timeEntry.isPaused ?? false ? 0 : 1)
+        if let history = timeEntry.history {
+            for entry in history {
+                elapsed += entry.elapsedTime
+            }
         }
-        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+        return historyCount > 0 ? elapsed / Double(historyCount) : 0
     }
     
-    func timeStringEntries(for entry: TimerEntry, isPaused: Bool) -> String {
-        if isPaused {
-            return "Paused"
-        }
-
-        let elapsed = Date().timeIntervalSince(entry.startTime)
-        let totalSeconds = Int(elapsed)
-        
-        let years = totalSeconds / 31_536_000
-        let days = (totalSeconds % 31_536_000) / 86_400
-        let hours = (totalSeconds % 86_400) / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        let seconds = totalSeconds % 60
-
-        let timeText: String
-        if years > 0 {
-            timeText = String(format: "%d y\n%d d\n%02d h\n%02d:%02d", years, days, hours, minutes, seconds)
-        } else {
-            timeText = String(format: "%d d\n%02d h\n%02d:%02d", days, hours, minutes, seconds)
-        }
-        return timeText
-    }
-    
-    func addRule(rule : String, for title: String){
-        timeEntriesMap[title]?.rules = rule
-        timeEntriesMap[title]?.lastUpdated = Date()
-        saveData()
-    }
-    
-    func getRules(for key: String) -> String? {
-        return timeEntriesMap[key]?.rules
-    }
-    
-    func updateTimeEntriesMap(_ newMap: [String: TimerEntry]) {
-        // check last updated time and update here.
-        var updated = newMap
-        for (key,newVal) in newMap{
-            if let existing = timeEntriesMap[key]{
-                if newVal.lastUpdated > existing.lastUpdated{
-                    updated[key] = newVal
-                    print("Updated key \(key)")
-                }else{
-                    updated[key] = existing
+    func longestStreak(for title: String) -> TimeInterval {
+        guard let timeEntry = timeEntriesMap[title] else { return 0 }
+        var longest = timeEntry.isPaused ?? false ? 0 : Date().timeIntervalSince(timeEntry.startTime)
+        if let history = timeEntry.history {
+            for entry in history {
+                if entry.elapsedTime > longest {
+                    longest = entry.elapsedTime
                 }
             }
         }
-        timeEntriesMap = updated
-        saveData()
+        return longest
     }
     
-    func notifyOther(){
-        connectivity.syncState(timeEntriesMap: timeEntriesMap)
-        // connectivity.sendRealtimeUpdate(timeEntriesMap: timeEntriesMap)
+    // MARK: - Reset Button Helper (watchOS safe)
+    func resetButton(for key: String, path: Binding<NavigationPath>, userReason: Binding<String>) -> AnyView {
+        let isPaused = timeEntriesMap[key]?.isPaused ?? false
+        
+        if isPaused {
+            return AnyView(Button {
+                self.resumeTimer(for: key)
+            } label: {
+                Image(systemName: "play.fill")
+                    .foregroundColor(.red)
+                    .padding(5)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(5)
+            })
+        } else {
+            return AnyView(Button {
+                userReason.wrappedValue = ""
+                path.wrappedValue.append(key)
+            } label: {
+                Image(systemName: "arrow.counterclockwise")
+                    .foregroundColor(.red)
+                    .padding(5)
+                    .background(Color.gray.opacity(0.2))
+                    .cornerRadius(5)
+            })
+        }
     }
     
+    // MARK: - Rename / Update Functions
     func renameStreak(oldKey: String, newKey: String) {
         guard let entry = timeEntriesMap.removeValue(forKey: oldKey) else { return }
         timeEntriesMap[newKey] = entry
@@ -225,12 +198,64 @@ class UserViewModel: ObservableObject {
         guard var entry = timeEntriesMap[key] else { return }
         var historyArray = entry.history ?? []
         guard historyArray.indices.contains(index) else { return }
-
         historyArray[index].resetReason = newReason
         entry.history = historyArray
         timeEntriesMap[key] = entry
-
         saveData()
         connectivity.syncState(timeEntriesMap: timeEntriesMap)
+    }
+    
+    func updateTimeEntriesMap(_ newMap: [String: TimerEntry]) {
+        var updated = newMap
+        for (key, newVal) in newMap {
+            if let existing = timeEntriesMap[key] {
+                updated[key] = newVal.lastUpdated > existing.lastUpdated ? newVal : existing
+            }
+        }
+        timeEntriesMap = updated
+        saveData()
+    }
+    
+    func addRule(rule: String, for title: String) {
+        timeEntriesMap[title]?.rules = rule
+        timeEntriesMap[title]?.lastUpdated = Date()
+        saveData()
+    }
+    
+    func getRules(for key: String) -> String? {
+        return timeEntriesMap[key]?.rules
+    }
+    
+    // MARK: - Time Formatting
+    func timeString(from elapsedTime: TimeInterval) -> String {
+        let years = Int(elapsedTime) / 31_536_000
+        let days = (Int(elapsedTime) % 31_536_000) / 86400
+        let hours = (Int(elapsedTime) % 86400) / 3600
+        let minutes = (Int(elapsedTime) % 3600) / 60
+        let seconds = Int(elapsedTime) % 60
+        
+        if years > 0 {
+            return "\(years)y \(days)d \(hours)h \(minutes)m \(seconds)s"
+        } else if days > 0 {
+            return "\(days)d \(hours)h \(minutes)m \(seconds)s"
+        }
+        return String(format: "%02d:%02d:%02d", hours, minutes, seconds)
+    }
+    
+    func timeStringEntries(for entry: TimerEntry, isPaused: Bool) -> String {
+        if isPaused { return "Paused" }
+        let elapsed = Date().timeIntervalSince(entry.startTime)
+        let totalSeconds = Int(elapsed)
+        let years = totalSeconds / 31_536_000
+        let days = (totalSeconds % 31_536_000) / 86400
+        let hours = (totalSeconds % 86400) / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let seconds = totalSeconds % 60
+        
+        if years > 0 {
+            return String(format: "%d y\n%d d\n%02d h\n%02d:%02d", years, days, hours, minutes, seconds)
+        } else {
+            return String(format: "%d d\n%02d h\n%02d:%02d", days, hours, minutes, seconds)
+        }
     }
 }

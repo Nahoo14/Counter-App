@@ -19,10 +19,8 @@ class Connectivity: NSObject, WCSessionDelegate, ObservableObject {
         }
     }
 
-    /// ViewModel sets this closure so we can pass remote updates through
     var onReceiveState: (([String: TimerEntry]) -> Void)?
 
-    // MARK: - Send data
 
     func syncState(timeEntriesMap: [String: TimerEntry]) {
         do {
@@ -42,7 +40,6 @@ class Connectivity: NSObject, WCSessionDelegate, ObservableObject {
         }
     }
 
-    // MARK: - Receive data
 
     func session(_ session: WCSession,
                  didReceiveMessage message: [String: Any],
@@ -52,7 +49,6 @@ class Connectivity: NSObject, WCSessionDelegate, ObservableObject {
                 let data = try JSONSerialization.data(withJSONObject: message, options: [])
                 let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: data)
 
-                // 👇 Forward to ViewModel
                 onReceiveState?(decoded)
 
                 replyHandler(["response": "Received time entries"])
@@ -70,7 +66,6 @@ class Connectivity: NSObject, WCSessionDelegate, ObservableObject {
                 let decoded = try JSONDecoder().decode([String: TimerEntry].self, from: encoded)
 
                 DispatchQueue.main.async {
-                    // 👇 Forward to ViewModel
                     self.onReceiveState?(decoded)
                 }
             } catch {
@@ -78,8 +73,6 @@ class Connectivity: NSObject, WCSessionDelegate, ObservableObject {
             }
         }
     }
-
-    // MARK: - WCSession lifecycle
 
     func session(_ session: WCSession,
                  activationDidCompleteWith activationState: WCSessionActivationState,

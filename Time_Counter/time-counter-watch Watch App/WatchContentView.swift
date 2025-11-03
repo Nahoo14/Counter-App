@@ -4,36 +4,33 @@
 //
 //  Created by Baby Tinishu on 4/19/25.
 //
-// Watch app will be paid.
 
 import SwiftUI
 
 struct ContentView: View {
     @StateObject var viewModel: UserViewModel
-    @StateObject var connectivity = Connectivity.shared
-    
-    @State private var path: [String] = []
+    @State private var path = NavigationPath()
     @State private var userReason = ""
     
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(alignment: .leading, spacing: 4) {
-                List {
-                    ForEach(viewModel.timeEntriesMap.keys.sorted(), id: \.self) { key in
+            let sortedKeys = viewModel.timeEntriesMap.keys.sorted()
+            
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 8) {
+                    ForEach(sortedKeys, id: \.self) { key in
                         if let entry = viewModel.timeEntriesMap[key] {
-                            let isPaused = entry.isPaused
+                            let timeText = viewModel.timeStringEntries(for: entry, isPaused: entry.isPaused ?? false)
                             TimerRowView(
                                 key: key,
                                 entry: entry,
-                                resetButton: {
-                                    resetButton(for: key) as! AnyView
-                                },
-                                timeString: viewModel.timeStringEntries(for: entry, isPaused: isPaused ?? false)
+                                resetButton: { viewModel.resetButton(for: key, path: $path, userReason: $userReason) },
+                                timeString: timeText
                             )
                         }
                     }
                 }
-                .padding(.leading, 0.1)
+                .padding(.horizontal, 6)
             }
             .navigationDestination(for: String.self) { key in
                 ResetInputView(
@@ -43,70 +40,19 @@ struct ContentView: View {
                         viewModel.resetTimer(for: key, reason: userReason, resetTime: Date())
                         path.removeLast()
                     },
-                    onSubmitPlusPause:{
+                    onSubmitPlusPause: {
                         viewModel.resetAndPauseTimer(for: key, reason: userReason, resetTime: Date())
                         path.removeLast()
                     },
-                    onCancel: {
-                        path.removeLast()
-                    }
+                    onCancel: { path.removeLast() }
                 )
             }
         }
-        .onChange(of: viewModel.timeEntriesMap){
-            connectivity.syncState(timeEntriesMap: viewModel.timeEntriesMap)
+        .onAppear { viewModel.startUpdatingTime() }
+        .onDisappear { viewModel.stopUpdatingTime() }
+        .onChange(of: viewModel.timeEntriesMap) { _ in
+            viewModel.connectivity.syncState(timeEntriesMap: viewModel.timeEntriesMap)
         }
-        .onAppear {
-            viewModel.startUpdatingTime()
-        }
-        .onDisappear {
-            viewModel.stopUpdatingTime()
-        }
-        .background(
-            ZStack {
-                Image("Seedling")
-                    .resizable()
-                    .scaledToFill()
-                Color.black.opacity(0.5)
-            }
-        )
+        .background(Color.black.opacity(0.5))
     }
-   
-    @State private var selectedKey = ""
-    // removeCounter defines the view for the remove button.
-    func resetButton(for key:String)-> some View {
-        let isPaused = viewModel.timeEntriesMap[key]?.isPaused ?? false
-        if isPaused{
-            return AnyView(Button(action: {
-            }) {
-                Image(systemName: "play.fill")
-                    .foregroundColor(.red)
-                    .padding(5)
-                    .background(Color.gray.opacity(0.2))
-                    .cornerRadius(5)
-                    .onTapGesture{
-                        selectedKey = key
-                        viewModel.resumeTimer(for: key)
-                    }
-            }
-            )}
-        return AnyView(Button(action: {
-        }) {
-            Image(systemName: "arrow.counterclockwise")
-                .foregroundColor(.red)
-                .padding(5)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(5)
-                .onTapGesture {
-                    userReason = ""
-                    path.append(key)
-                }
-        })
-    }
-}
-
-let viewModel = UserViewModel()
-
-#Preview {
-    ContentView(viewModel: viewModel)
 }

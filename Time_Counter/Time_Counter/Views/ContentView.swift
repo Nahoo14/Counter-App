@@ -3,7 +3,6 @@ import SwiftUI
 struct ContentView: View {
     
     /*
-     * Parent chld mode
      * Settings section
      * Publish
      * Widget
@@ -11,7 +10,7 @@ struct ContentView: View {
      * Reminder
     */
     
-    @StateObject var viewModel: UserViewModel
+    @ObservedObject var viewModel: UserViewModel
     @StateObject var connectivity = Connectivity.shared
     @State private var showRenameAlert = false
     @State private var keyToRename: String? = nil
@@ -108,6 +107,15 @@ struct ContentView: View {
                         UIApplication.shared.endEditing()
                     }
             )
+            .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink(destination: SettingsView(viewModel: viewModel)) {
+                            Image(systemName: "gearshape.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
         }
     }
 

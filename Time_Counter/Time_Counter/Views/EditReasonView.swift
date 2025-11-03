@@ -36,7 +36,7 @@ struct EditResetReasonView: View {
                     Spacer()
                     Button(action: {
                         viewModel.updateResetReason(for: key, at: entryIndex, with: resetReason)
-                        dismiss() // ✅ Only dismisses the sheet, stays on HistoricalView
+                        dismiss()
                     }) {
                         Text("Save")
                             .font(.headline)
