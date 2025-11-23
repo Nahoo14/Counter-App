@@ -12,7 +12,7 @@ struct SettingsView: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            Text("App Theme")
+            Text("Theme")
                 .font(.headline)
             
             Picker("Theme", selection: $viewModel.selectedTheme) {

@@ -159,9 +159,37 @@ class UserViewModel: ObservableObject {
     }
     
     // MARK: - Reset Button Helper (watchOS safe)
-    func resetButton(for key: String, path: Binding<NavigationPath>, userReason: Binding<String>) -> AnyView {
+    func resetButton(
+        for key: String,
+        path: Binding<NavigationPath>,
+        userReason: Binding<String>
+    ) -> AnyView {
         let isPaused = timeEntriesMap[key]?.isPaused ?? false
-        
+
+        #if os(watchOS)
+        // Small watchOS buttons
+        if isPaused {
+            return AnyView(Button {
+                self.resumeTimer(for: key)
+            } label: {
+                Image(systemName: "play.fill")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.red)
+            }
+            .buttonStyle(.plain))
+        } else {
+            return AnyView(Button {
+                userReason.wrappedValue = ""
+                path.wrappedValue.append(key)
+            } label: {
+                Image(systemName: "arrow.counterclockwise")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.red)
+            }
+            .buttonStyle(.plain))
+        }
+        #else
+        // iOS buttons
         if isPaused {
             return AnyView(Button {
                 self.resumeTimer(for: key)
@@ -184,6 +212,7 @@ class UserViewModel: ObservableObject {
                     .cornerRadius(5)
             })
         }
+        #endif
     }
     
     // MARK: - Rename / Update Functions

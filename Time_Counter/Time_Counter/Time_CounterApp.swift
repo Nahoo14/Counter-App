@@ -13,7 +13,6 @@ struct TimeCounterApp: App {
     
     var body: some Scene {
         WindowGroup {
-            #if os(iOS)
             TabView {
                 ContentView(viewModel: viewModel)
                     .tabItem { Label("Timers", systemImage: "timer") }
@@ -21,9 +20,7 @@ struct TimeCounterApp: App {
                 SettingsView(viewModel: viewModel)
                     .tabItem { Label("Settings", systemImage: "gearshape") }
             }
-            #elseif os(watchOS)
-            ContentView(viewModel: viewModel)
-            #endif
+            .preferredColorScheme(viewModel.selectedTheme.colorScheme)
         }
     }
 }

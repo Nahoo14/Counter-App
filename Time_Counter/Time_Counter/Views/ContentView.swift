@@ -107,15 +107,6 @@ struct ContentView: View {
                         UIApplication.shared.endEditing()
                     }
             )
-            .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        NavigationLink(destination: SettingsView(viewModel: viewModel)) {
-                            Image(systemName: "gearshape.fill")
-                                .font(.system(size: 20))
-                                .foregroundColor(.white)
-                        }
-                    }
-                }
         }
     }
 
