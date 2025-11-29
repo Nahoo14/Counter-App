@@ -14,7 +14,9 @@ struct HistoricalView: View {
                 VStack {
                     Text("\(key) history")
                         .font(.system(size: 20, weight: .bold, design: .monospaced))
-                        .foregroundColor(.black)
+                        .foregroundColor(.white)
+                        .padding(8)
+                        .background(RoundedRectangle(cornerRadius: 6).fill(Color.black))
 
                     let average = viewModel.calculateAverage(for: key)
                     let longest = viewModel.longestStreak(for: key)
@@ -79,10 +81,19 @@ struct HistoricalView: View {
                     .scrollContentBackground(.hidden)
                 }
                 .background(
-                    Image("Flower")
-                        .resizable()
-                        .scaledToFill()
-                        .ignoresSafeArea()
+                    Group {
+                        if let uiImage = viewModel.customBackgroundImage {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .ignoresSafeArea()
+                        } else {
+                            Image("Flower")
+                                .resizable()
+                                .scaledToFill()
+                                .ignoresSafeArea()
+                        }
+                    }
                 )
             }
             .sheet(isPresented: $showEditReasonSheet) {

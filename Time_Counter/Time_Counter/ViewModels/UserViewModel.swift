@@ -7,6 +7,8 @@
 
 import SwiftUI
 import Combine
+import UIKit
+import StoreKit
 
 class UserViewModel: ObservableObject {
     
@@ -30,6 +32,8 @@ class UserViewModel: ObservableObject {
     init() {
         timeEntriesMap = Data.loadMapData()       // Load saved timers
         loadThemeFromUserDefaults()               // Load saved theme
+        loadCustomBackgroundPurchase()
+        Task { await fetchProducts(); await checkEntitlementsAsync() }
         Connectivity.shared.onReceiveState = { [weak self] remoteMap in
             self?.updateTimeEntriesMap(remoteMap)
         }
@@ -44,6 +48,144 @@ class UserViewModel: ObservableObject {
         if let saved = UserDefaults.standard.string(forKey: "app_theme"),
            let theme = AppTheme(rawValue: saved) {
             selectedTheme = theme
+        }
+    }
+
+    private func loadCustomBackgroundPurchase() {
+        hasCustomBackgroundPurchased = UserDefaults.standard.bool(forKey: "has_custom_bg_purchase")
+    }
+
+    // MARK: - Custom Background Persistence
+    @Published var hasCustomBackgroundPurchased: Bool = false {
+        didSet { UserDefaults.standard.set(hasCustomBackgroundPurchased, forKey: "has_custom_bg_purchase") }
+    }
+
+    func saveCustomBackgroundImage(_ image: UIImage) {
+        if let data = image.pngData() {
+            let url = getDocumentsDirectory().appendingPathComponent("custom_background.png")
+            try? data.write(to: url)
+        }
+    }
+
+    func loadCustomBackgroundImage() -> UIImage? {
+        let url = getDocumentsDirectory().appendingPathComponent("custom_background.png")
+        return UIImage(contentsOfFile: url.path)
+    }
+
+    var customBackgroundImage: UIImage? { loadCustomBackgroundImage() }
+
+    private func getDocumentsDirectory() -> URL {
+        FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+    }
+
+    // MARK: - Purchases
+    @Published var availableProducts: [Product] = []
+    private let productIDs: [String] = ["com.nahom.streaktimer.proversion"]
+
+    func fetchProducts() async {
+        do {
+            let fetched = try await Product.products(for: productIDs)
+            DispatchQueue.main.async {
+                self.availableProducts = fetched
+                print("Fetched products count: \(fetched.count), ids: \(fetched.map({ $0.id }))")
+            }
+            // Log details for missing products
+            let returnedIDs = Set(fetched.map { $0.id })
+            let missing = productIDs.filter { !returnedIDs.contains($0) }
+            if !missing.isEmpty {
+                print("Missing product IDs from response: \(missing)")
+            }
+        } catch {
+            print("Failed to fetch products: \(error)")
+        }
+    }
+
+    func purchaseCustomBackground() {
+        Task {
+            // Ensure products are loaded
+            if availableProducts.isEmpty {
+                await fetchProducts()
+            }
+            print("Available products before purchase: \(availableProducts.map({ $0.id }))")
+            print("Expected productIDs: \(productIDs)")
+            guard let product = availableProducts.first(where: { $0.id == productIDs.first }) else {
+                print("No product available to purchase; availableProducts: \(availableProducts.map({ $0.id }))")
+                return
+            }
+
+            do {
+                let result = try await product.purchase()
+                switch result {
+                case .success(let verification):
+                    switch verification {
+                    case .verified(_):
+                        DispatchQueue.main.async { self.hasCustomBackgroundPurchased = true }
+                    case .unverified(_, let error):
+                        print("Transaction unverified: \(error)")
+                    }
+                case .userCancelled, .pending:
+                    print("Purchase cancelled or pending: \(result)")
+                    break
+                default:
+                    break
+                }
+            } catch {
+                print("Purchase failed: \(error)")
+            }
+        }
+    }
+
+    func restorePurchases() {
+        Task {
+            do {
+                for await verification in Transaction.currentEntitlements {
+                    switch verification {
+                    case .verified(let transaction):
+                        if transaction.productID == productIDs.first {
+                            DispatchQueue.main.async { self.hasCustomBackgroundPurchased = true }
+                        }
+                    case .unverified(let transaction, let error):
+                        // Unverified transactions are ignored for entitlement granting, but log for debugging
+                        print("Unverified transaction for \(transaction.productID): \(error)")
+                    }
+                }
+            } catch {
+                print("Restore failed: \(error)")
+            }
+        }
+    }
+
+    // Optional quick entitlement check on launch
+    func checkEntitlements() {
+        Task {
+            for await verificationResult in Transaction.currentEntitlements {
+                switch verificationResult {
+                case .verified(let transaction):
+                    if transaction.productID == productIDs.first {
+                        DispatchQueue.main.async { self.hasCustomBackgroundPurchased = true }
+                    }
+                case .unverified(let transaction, let error):
+                    print("Unverified transaction for \(transaction.productID): \(error)")
+                }
+            }
+        }
+    }
+
+    // Async wrapper to call checkEntitlements from init
+    func checkEntitlementsAsync() async {
+        do {
+            for try await verificationResult in Transaction.currentEntitlements {
+                switch verificationResult {
+                case .verified(let transaction):
+                    if transaction.productID == productIDs.first {
+                        DispatchQueue.main.async { self.hasCustomBackgroundPurchased = true }
+                    }
+                case .unverified(let transaction, let error):
+                    print("Unverified transaction for \(transaction.productID): \(error)")
+                }
+            }
+        } catch {
+            print("Entitlement check failed: \(error)")
         }
     }
     

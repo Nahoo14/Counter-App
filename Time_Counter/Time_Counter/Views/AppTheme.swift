@@ -15,7 +15,7 @@ enum AppTheme: String, CaseIterable, Codable {
     // MARK: Display Name
     var displayName: String {
         switch self {
-        case .system: return "System Default"
+        case .system: return "System"
         case .light: return "Light"
         case .dark: return "Dark"
         }

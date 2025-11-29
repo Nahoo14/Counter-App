@@ -26,6 +26,8 @@ struct ContentView: View {
                 Text("Streaks")
                     .foregroundColor(.white)
                     .font(.system(size: 25, weight: .bold))
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 6).fill(Color.black))
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.leading, 25)
                     .onTapGesture {
@@ -99,13 +101,21 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(
-                Image("Seed")
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea(edges: .all)
-                    .onTapGesture {
-                        UIApplication.shared.endEditing()
+                Group {
+                    if let uiImage = viewModel.customBackgroundImage {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .ignoresSafeArea(edges: .all)
+                            .onTapGesture { UIApplication.shared.endEditing() }
+                    } else {
+                        Image("Seed")
+                            .resizable()
+                            .scaledToFill()
+                            .ignoresSafeArea(edges: .all)
+                            .onTapGesture { UIApplication.shared.endEditing() }
                     }
+                }
             )
         }
     }
