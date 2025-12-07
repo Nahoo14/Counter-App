@@ -14,8 +14,9 @@ struct SettingsView: View {
     @State private var bypassCode: String = ""
     
     var body: some View {
+        let proFeatures = ["Custom backgrounds"]
         List {
-            Section(header: Text("Light Mode")) {
+            Section("Light Mode") {
                 Picker("Mode", selection: $viewModel.selectedTheme) {
                     ForEach(AppTheme.allCases, id: \.self) { theme in
                         Text(theme.displayName).tag(theme)
@@ -25,17 +26,28 @@ struct SettingsView: View {
                 .pickerStyle(.inline)
             }
 
-            Section(header: Text("Custom Background")) {
-                if viewModel.hasCustomBackgroundPurchased {
+            Section("Pro Upgrade") {
+                ForEach(proFeatures, id: \.self) { feature in
+                    HStack {
+                        Text(feature)
+                        Spacer()
+                        Image(systemName: viewModel.hasProPurchased ? "lock.open" : "lock.fill")
+                            .foregroundColor(viewModel.hasProPurchased ? .green : .secondary)
+                    }
+                }
+
+                if viewModel.hasProPurchased {
                     Button("Choose Custom Background") {
                         showImagePicker = true
                     }
                     Button("Remove Purchase (Test)") {
-                        viewModel.hasCustomBackgroundPurchased = false
+                        viewModel.hasProPurchased = false
                     }
                 } else {
-                    Button("Purchase") {
-                        viewModel.purchaseCustomBackground()
+                    Button {
+                        viewModel.purchaseProVersion()
+                    } label: {
+                        Text("Purchase Pro \(viewModel.availableProducts.first?.displayPrice ?? "$0.99")")
                     }
                     Button("Restore Purchases") {
                         viewModel.restorePurchases()
@@ -47,7 +59,7 @@ struct SettingsView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     Button("Apply Code") {
                         if bypassCode == "TEST-UNLOCK-2025" {
-                            viewModel.hasCustomBackgroundPurchased = true
+                            viewModel.hasProPurchased = true
                         }
                         bypassCode = ""
                     }
@@ -63,6 +75,9 @@ struct SettingsView: View {
             }
         }) {
             ImagePicker(selectedImage: $selectedUIImage)
+        }
+        .task {
+            await viewModel.fetchProducts()
         }
     }
 }

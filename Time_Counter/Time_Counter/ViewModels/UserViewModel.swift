@@ -25,14 +25,14 @@ class UserViewModel: ObservableObject {
     var connectivity = Connectivity.shared
     
     private var timer: Timer? = nil
-    var Data = DataManager()
+    private var dataManager = DataManager()
     private var cancellables = Set<AnyCancellable>()
     
     // MARK: - Init
     init() {
-        timeEntriesMap = Data.loadMapData()       // Load saved timers
+        timeEntriesMap = dataManager.loadMapData()       // Load saved timers
         loadThemeFromUserDefaults()               // Load saved theme
-        loadCustomBackgroundPurchase()
+        loadProPurchase()
         Task { await fetchProducts(); await checkEntitlementsAsync() }
         Connectivity.shared.onReceiveState = { [weak self] remoteMap in
             self?.updateTimeEntriesMap(remoteMap)
@@ -51,13 +51,13 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    private func loadCustomBackgroundPurchase() {
-        hasCustomBackgroundPurchased = UserDefaults.standard.bool(forKey: "has_custom_bg_purchase")
+    private func loadProPurchase() {
+        hasProPurchased = UserDefaults.standard.bool(forKey: "has_pro_purchase")
     }
 
-    // MARK: - Custom Background Persistence
-    @Published var hasCustomBackgroundPurchased: Bool = false {
-        didSet { UserDefaults.standard.set(hasCustomBackgroundPurchased, forKey: "has_custom_bg_purchase") }
+    // MARK: - Purchases / Entitlements
+    @Published var hasProPurchased: Bool = false {
+        didSet { UserDefaults.standard.set(hasProPurchased, forKey: "has_pro_purchase") }
     }
 
     func saveCustomBackgroundImage(_ image: UIImage) {
@@ -100,7 +100,7 @@ class UserViewModel: ObservableObject {
         }
     }
 
-    func purchaseCustomBackground() {
+    func purchaseProVersion() {
         Task {
             // Ensure products are loaded
             if availableProducts.isEmpty {
@@ -119,7 +119,7 @@ class UserViewModel: ObservableObject {
                 case .success(let verification):
                     switch verification {
                     case .verified(_):
-                        DispatchQueue.main.async { self.hasCustomBackgroundPurchased = true }
+                        DispatchQueue.main.async { self.hasProPurchased = true }
                     case .unverified(_, let error):
                         print("Transaction unverified: \(error)")
                     }
@@ -142,7 +142,7 @@ class UserViewModel: ObservableObject {
                     switch verification {
                     case .verified(let transaction):
                         if transaction.productID == productIDs.first {
-                            DispatchQueue.main.async { self.hasCustomBackgroundPurchased = true }
+                            DispatchQueue.main.async { self.hasProPurchased = true }
                         }
                     case .unverified(let transaction, let error):
                         // Unverified transactions are ignored for entitlement granting, but log for debugging
@@ -162,7 +162,7 @@ class UserViewModel: ObservableObject {
                 switch verificationResult {
                 case .verified(let transaction):
                     if transaction.productID == productIDs.first {
-                        DispatchQueue.main.async { self.hasCustomBackgroundPurchased = true }
+                        DispatchQueue.main.async { self.hasProPurchased = true }
                     }
                 case .unverified(let transaction, let error):
                     print("Unverified transaction for \(transaction.productID): \(error)")
@@ -178,7 +178,7 @@ class UserViewModel: ObservableObject {
                 switch verificationResult {
                 case .verified(let transaction):
                     if transaction.productID == productIDs.first {
-                        DispatchQueue.main.async { self.hasCustomBackgroundPurchased = true }
+                        DispatchQueue.main.async { self.hasProPurchased = true }
                     }
                 case .unverified(let transaction, let error):
                     print("Unverified transaction for \(transaction.productID): \(error)")
@@ -212,8 +212,8 @@ class UserViewModel: ObservableObject {
     
     // MARK: - Data Handling
     func saveData() {
-        Data.timeEntriesMap = timeEntriesMap
-        Data.saveMapData()
+        dataManager.timeEntriesMap = timeEntriesMap
+        dataManager.saveMapData()
     }
     
     func notifyOther() {

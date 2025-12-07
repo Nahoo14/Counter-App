@@ -75,7 +75,7 @@
          </BuildableReference>
       </BuildableProductRunnable>
       <StoreKitConfigurationFileReference
-         identifier = "../../StoreKitConfiguration.storekit">
+         identifier = "../../Time_Counter/StoreKitConfig.storekit">
       </StoreKitConfigurationFileReference>
    </LaunchAction>
    <ProfileAction
