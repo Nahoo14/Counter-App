@@ -19,8 +19,18 @@ struct TimerRowView: View {
                 .font(.system(size: 12, weight: .bold, design: .monospaced))
                 .foregroundColor(.blue)
             Spacer()
-            Text(timeString)
-                .font(.system(size: 13, weight: .bold, design: .monospaced))
+            if entry.type == .timer {
+                Text(timeString)
+                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+            } else {
+                // Daily Check-In representation: three recent days as dots (green = success, red = fail)
+                HStack(spacing: 6) {
+                    ForEach(0..<7, id: \.self) { idx in
+                        // Placeholder: if history exists mark green else red; you can replace with real per-day data
+                        Circle().fill(idx % 2 == 0 ? Color.green : Color.red).frame(width: 10, height: 10)
+                    }
+                }
+            }
             resetButton()
         }
         .padding(8)

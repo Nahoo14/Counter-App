@@ -9,6 +9,7 @@ import SwiftUI
 import Combine
 import UIKit
 import StoreKit
+import UserNotifications
 
 class UserViewModel: ObservableObject {
     
@@ -33,9 +34,22 @@ class UserViewModel: ObservableObject {
         timeEntriesMap = dataManager.loadMapData()       // Load saved timers
         loadThemeFromUserDefaults()               // Load saved theme
         loadProPurchase()
-        Task { await fetchProducts(); await checkEntitlementsAsync() }
+        Task { [weak self] in
+            await self?.fetchProducts(); await self?.checkEntitlementsAsync()
+        }
         Connectivity.shared.onReceiveState = { [weak self] remoteMap in
             self?.updateTimeEntriesMap(remoteMap)
+        }
+        // update notification permission status
+        updateNotificationStatus()
+        // Listen for transaction updates to grant entitlements
+        Task.detached { [weak self] in
+            for await result in Transaction.updates {
+                if case .verified(let transaction) = result,
+                   transaction.productID == self?.productIDs.first {
+                    DispatchQueue.main.async { [weak self] in self?.hasProPurchased = true }
+                }
+            }
         }
     }
     
@@ -58,6 +72,178 @@ class UserViewModel: ObservableObject {
     // MARK: - Purchases / Entitlements
     @Published var hasProPurchased: Bool = false {
         didSet { UserDefaults.standard.set(hasProPurchased, forKey: "has_pro_purchase") }
+    }
+
+    // Notification permissions and scheduling
+    @Published var notificationsAuthorized: Bool = false
+    @Published var notificationsEnabled: Bool = UserDefaults.standard.bool(forKey: "notifications_enabled") {
+        didSet { UserDefaults.standard.set(notificationsEnabled, forKey: "notifications_enabled") }
+    }
+    @Published var notificationTime: Date = UserDefaults.standard.object(forKey: "notifications_time") as? Date ?? Calendar.current.date(bySettingHour: 20, minute: 0, second: 0, of: Date()) ?? Date()
+    @Published var notificationTimes: [Date] = (UserDefaults.standard.array(forKey: "notifications_times") as? [Double])?.map { Date(timeIntervalSince1970: $0) } ?? [] {
+        didSet {
+            let arr = notificationTimes.map { $0.timeIntervalSince1970 }
+            UserDefaults.standard.set(arr, forKey: "notifications_times")
+            if notificationsEnabled {
+                // reschedule with new times
+                scheduleNotificationsForAllDailyEntries(at: notificationTimes)
+            }
+        }
+    }
+
+    func updateNotificationStatus() {
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            DispatchQueue.main.async {
+                self.notificationsAuthorized = settings.authorizationStatus == .authorized
+            }
+        }
+    }
+
+    func requestNotificationAuthorization(completion: @escaping (Bool) -> Void) {
+        let center = UNUserNotificationCenter.current()
+        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            DispatchQueue.main.async {
+                self.notificationsAuthorized = granted
+                completion(granted)
+            }
+        }
+    }
+
+    @Published var showNotificationsDeniedAlert: Bool = false
+
+    func checkAndEnableNotifications(at time: Date) {
+        // Save desired time up front
+        notificationTime = time
+        UserDefaults.standard.set(time, forKey: "notifications_time")
+        // Ensure single time is also in list
+        if !notificationTimes.contains(where: { Calendar.current.isDate($0, inSameDayAs: time) }) {
+            notificationTimes.append(time)
+        }
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            switch settings.authorizationStatus {
+            case .authorized, .provisional, .ephemeral:
+                // schedule immediately
+                DispatchQueue.main.async {
+                    self.notificationsEnabled = true
+                }
+                self.scheduleNotificationsForAllDailyEntries(at: self.notificationTimes)
+            case .denied:
+                // cannot enable; prompt user to open Settings
+                DispatchQueue.main.async {
+                    self.notificationsEnabled = false
+                    self.showNotificationsDeniedAlert = true
+                }
+            case .notDetermined:
+                // request authorization
+                center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+                    DispatchQueue.main.async {
+                        self.notificationsAuthorized = granted
+                        if granted {
+                            self.notificationsEnabled = true
+                        } else {
+                            self.notificationsEnabled = false
+                            self.showNotificationsDeniedAlert = true
+                        }
+                    }
+                    if granted {
+                        self.scheduleNotificationsForAllDailyEntries(at: self.notificationTimes)
+                    }
+                }
+            @unknown default:
+                DispatchQueue.main.async {
+                    self.notificationsEnabled = false
+                }
+            }
+        }
+    }
+
+    func disableNotifications() {
+        notificationsEnabled = false
+        let center = UNUserNotificationCenter.current()
+        // Remove all app-specific daily check identifiers
+        center.getPendingNotificationRequests { requests in
+            let ids = requests.filter { $0.identifier.hasPrefix("yesNoDaily_") }.map { $0.identifier }
+            center.removePendingNotificationRequests(withIdentifiers: ids)
+        }
+    }
+
+    // Public helper to reschedule with current notificationTimes (used after add/remove)
+    func rescheduleNotificationsIfEnabled() {
+        guard notificationsEnabled else { return }
+        let center = UNUserNotificationCenter.current()
+        center.getNotificationSettings { settings in
+            if settings.authorizationStatus == .authorized || settings.authorizationStatus == .provisional {
+                // clear existing yesNoDaily_... requests before scheduling
+                center.getPendingNotificationRequests { requests in
+                    let ids = requests.filter { $0.identifier.hasPrefix("yesNoDaily_") }.map { $0.identifier }
+                    if !ids.isEmpty { center.removePendingNotificationRequests(withIdentifiers: ids) }
+                    self.scheduleNotificationsForAllDailyEntries(at: self.notificationTimes)
+                }
+            } else if settings.authorizationStatus == .denied {
+                DispatchQueue.main.async { self.showNotificationsDeniedAlert = true }
+            }
+        }
+    }
+
+    // Debug helpers
+    func printPendingNotifications() {
+        let center = UNUserNotificationCenter.current()
+        center.getPendingNotificationRequests { requests in
+            print("Pending notification requests:\n\(requests.map { $0.identifier + " @ " + (($0.trigger as? UNCalendarNotificationTrigger)?.dateComponents.description ?? "no trigger") }.joined(separator: "\n"))")
+        }
+    }
+
+    func forceRescheduleNow() {
+        // For testing: clear and reschedule
+        let center = UNUserNotificationCenter.current()
+        center.getPendingNotificationRequests { requests in
+            let ids = requests.filter { $0.identifier.hasPrefix("yesNoDaily_") }.map { $0.identifier }
+            if !ids.isEmpty { center.removePendingNotificationRequests(withIdentifiers: ids) }
+            self.scheduleNotificationsForAllDailyEntries(at: self.notificationTimes)
+        }
+    }
+
+    private func scheduleNotificationsForAllDailyEntries(at times: [Date]) {
+        let center = UNUserNotificationCenter.current()
+        // remove existing app-level yesNoDaily_time_... requests first
+        center.getPendingNotificationRequests { requests in
+            let ids = requests.filter { $0.identifier.hasPrefix("yesNoDaily_time_") }.map { $0.identifier }
+            if !ids.isEmpty { center.removePendingNotificationRequests(withIdentifiers: ids) }
+            // schedule one repeating notification per configured time
+            for (idx, time) in times.enumerated() {
+                let content = UNMutableNotificationContent()
+                content.title = "Daily Check"
+                content.body = "Time to check your streaks — tap to mark today's check-in."
+                content.sound = .default
+                var dateComponents = Calendar.current.dateComponents([.hour, .minute], from: time)
+                dateComponents.second = 0
+                let id = "yesNoDaily_time_\(idx)"
+                let repeatingTrigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+                let repeatingRequest = UNNotificationRequest(identifier: id, content: content, trigger: repeatingTrigger)
+                center.add(repeatingRequest) { error in
+                    if let err = error { print("Failed to schedule repeating notification for time index \(idx): \(err)") }
+                }
+            }
+        }
+    }
+
+    private func nextOccurrence(hour: Int, minute: Int, after date: Date) -> Date? {
+        var cal = Calendar.current
+        cal.timeZone = TimeZone.current
+        var comps = DateComponents()
+        comps.hour = hour
+        comps.minute = minute
+        comps.second = 0
+        if let next = cal.nextDate(after: date, matching: comps, matchingPolicy: .nextTime) {
+            return next
+        }
+        // fallback to tomorrow at that time
+        if let tomorrow = cal.date(byAdding: .day, value: 1, to: date) {
+            return cal.nextDate(after: tomorrow, matching: comps, matchingPolicy: .nextTime)
+        }
+        return nil
     }
 
     func saveCustomBackgroundImage(_ image: UIImage) {
@@ -85,8 +271,8 @@ class UserViewModel: ObservableObject {
     func fetchProducts() async {
         do {
             let fetched = try await Product.products(for: productIDs)
-            DispatchQueue.main.async {
-                self.availableProducts = fetched
+            DispatchQueue.main.async { [weak self] in
+                self?.availableProducts = fetched
                 print("Fetched products count: \(fetched.count), ids: \(fetched.map({ $0.id }))")
             }
             // Log details for missing products
@@ -101,7 +287,8 @@ class UserViewModel: ObservableObject {
     }
 
     func purchaseProVersion() {
-        Task {
+        Task { [weak self] in
+            guard let self = self else { return }
             // Ensure products are loaded
             if availableProducts.isEmpty {
                 await fetchProducts()
@@ -115,11 +302,12 @@ class UserViewModel: ObservableObject {
 
             do {
                 let result = try await product.purchase()
+// Note: Transaction.updates listener in init ensures all purchases are handled reliably.
                 switch result {
                 case .success(let verification):
                     switch verification {
                     case .verified(_):
-                        DispatchQueue.main.async { self.hasProPurchased = true }
+                        DispatchQueue.main.async { [weak self] in self?.hasProPurchased = true }
                     case .unverified(_, let error):
                         print("Transaction unverified: \(error)")
                     }
@@ -136,13 +324,14 @@ class UserViewModel: ObservableObject {
     }
 
     func restorePurchases() {
-        Task {
+        Task { [weak self] in
+            guard let self = self else { return }
             do {
                 for await verification in Transaction.currentEntitlements {
                     switch verification {
                     case .verified(let transaction):
                         if transaction.productID == productIDs.first {
-                            DispatchQueue.main.async { self.hasProPurchased = true }
+                            DispatchQueue.main.async { [weak self] in self?.hasProPurchased = true }
                         }
                     case .unverified(let transaction, let error):
                         // Unverified transactions are ignored for entitlement granting, but log for debugging
@@ -157,12 +346,13 @@ class UserViewModel: ObservableObject {
 
     // Optional quick entitlement check on launch
     func checkEntitlements() {
-        Task {
+        Task { [weak self] in
+            guard let self = self else { return }
             for await verificationResult in Transaction.currentEntitlements {
                 switch verificationResult {
                 case .verified(let transaction):
                     if transaction.productID == productIDs.first {
-                        DispatchQueue.main.async { self.hasProPurchased = true }
+                        DispatchQueue.main.async { [weak self] in self?.hasProPurchased = true }
                     }
                 case .unverified(let transaction, let error):
                     print("Unverified transaction for \(transaction.productID): \(error)")
@@ -178,7 +368,7 @@ class UserViewModel: ObservableObject {
                 switch verificationResult {
                 case .verified(let transaction):
                     if transaction.productID == productIDs.first {
-                        DispatchQueue.main.async { self.hasProPurchased = true }
+                        DispatchQueue.main.async { [weak self] in self?.hasProPurchased = true }
                     }
                 case .unverified(let transaction, let error):
                     print("Unverified transaction for \(transaction.productID): \(error)")
@@ -220,14 +410,16 @@ class UserViewModel: ObservableObject {
         connectivity.syncState(timeEntriesMap: timeEntriesMap)
     }
     
-    func addEntry(newEntryTitle: String, startTime: Date) {
+    func addEntry(newEntryTitle: String, startTime: Date, type: CounterType = .timer) {
         guard !newEntryTitle.isEmpty else { return }
-        let newEntry = TimerEntry(title: newEntryTitle, startTime: startTime, lastUpdated: Date())
+        let newEntry = TimerEntry(type: type, title: newEntryTitle, startTime: startTime, rules: nil, history: nil, isPaused: nil, lastUpdated: Date())
         timeEntriesMap[newEntryTitle] = newEntry
         notifyOther()
         saveData()
     }
-    
+
+    // MARK:
+
     func resumeTimer(for key: String) {
         timeEntriesMap[key]?.isPaused = false
         timeEntriesMap[key]?.startTime = Date()

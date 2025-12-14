@@ -12,6 +12,7 @@ struct SettingsView: View {
     @State private var showImagePicker = false
     @State private var selectedUIImage: UIImage? = nil
     @State private var bypassCode: String = ""
+    @State private var showingNotificationSheet: Bool = false
     
     var body: some View {
         let proFeatures = ["Custom backgrounds"]
@@ -62,6 +63,93 @@ struct SettingsView: View {
                             viewModel.hasProPurchased = true
                         }
                         bypassCode = ""
+                    }
+                }
+
+                Section {
+                    Button(action: {
+                        if viewModel.hasProPurchased {
+                            // show configuration sheet
+                            showingNotificationSheet = true
+                        } else {
+                            viewModel.purchaseProVersion()
+                        }
+                    }) {
+                        HStack {
+                            Text("Daily Reminders")
+                            Spacer()
+                            Image(systemName: viewModel.notificationsEnabled ? "bell.fill" : "bell.slash.fill")
+                                .foregroundColor(viewModel.notificationsEnabled ? .green : .red)
+                        }
+                    }
+                    .sheet(isPresented: $showingNotificationSheet) {
+                        VStack(spacing: 16) {
+                            Toggle(isOn: Binding(get: { viewModel.notificationsEnabled }, set: { newVal in
+                                if newVal {
+                                    viewModel.checkAndEnableNotifications(at: viewModel.notificationTime)
+                                } else {
+                                    viewModel.disableNotifications()
+                                }
+                            })) {
+                                Text("Enable Daily Reminders")
+                            }
+
+                            // Existing reminder times
+                            VStack(alignment: .leading) {
+                                Text("Reminder times")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                                if viewModel.notificationTimes.isEmpty {
+                                    Text("No reminder times set")
+                                        .foregroundColor(.secondary)
+                                } else {
+                                    ForEach(Array(viewModel.notificationTimes.enumerated()), id: \.offset) { idx, time in
+                                        HStack {
+                                            Text(DateFormatter.localizedString(from: time, dateStyle: .none, timeStyle: .short))
+                                            Spacer()
+                                                    Button(role: .destructive) {
+                                                viewModel.notificationTimes.remove(at: idx)
+                                                if viewModel.notificationsEnabled {
+                                                    viewModel.rescheduleNotificationsIfEnabled()
+                                                }
+                                            } label: {
+                                                Image(systemName: "trash")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Add new time
+                            DatePicker("", selection: $viewModel.notificationTime, displayedComponents: .hourAndMinute)
+                                .datePickerStyle(WheelDatePickerStyle())
+                            Button("Add Time") {
+                                // dedupe by hour and minute
+                                let compsNew = Calendar.current.dateComponents([.hour, .minute], from: viewModel.notificationTime)
+                                let exists = viewModel.notificationTimes.contains { comps in
+                                    let c = Calendar.current.dateComponents([.hour, .minute], from: comps)
+                                    return c.hour == compsNew.hour && c.minute == compsNew.minute
+                                }
+                                if !exists {
+                                    viewModel.notificationTimes.append(viewModel.notificationTime)
+                                    if viewModel.notificationsEnabled {
+                                        // reschedule with full list
+                                        viewModel.rescheduleNotificationsIfEnabled()
+                                    }
+                                }
+                            }
+
+                            Spacer()
+                            Button("Done") { showingNotificationSheet = false }
+                        }
+                        .padding()
+                        .alert(isPresented: $viewModel.showNotificationsDeniedAlert) {
+                            Alert(title: Text("Notifications Disabled"), message: Text("Notifications are disabled for this app in Settings. Please enable them in system Settings to receive reminders."), primaryButton: .default(Text("Open Settings"), action: {
+                                if let url = URL(string: UIApplication.openSettingsURLString) {
+                                    UIApplication.shared.open(url)
+                                }
+                            }), secondaryButton: .cancel())
+                        }
                     }
                 }
             }

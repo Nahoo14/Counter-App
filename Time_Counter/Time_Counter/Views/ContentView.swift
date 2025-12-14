@@ -35,29 +35,36 @@ struct ContentView: View {
                     }
                 List {
                     ForEach(timeEntriesMap.keys.sorted(), id: \.self) { key in
-                        HStack {
-                            NavigationLink(destination: rulesView(viewModel: viewModel, key: key)) {
-                                Text(key)
+                        if let entry = timeEntriesMap[key] {
+                            HStack {
+                                NavigationLink(destination: rulesView(viewModel: viewModel, key: key)) {
+                                    Text(key)
+                                        .font(.system(size: 15, weight: .bold, design: .monospaced))
+                                        .foregroundColor(.blue)
+                                }
+                                .buttonStyle(.plain)
+                                .simultaneousGesture(
+                                    LongPressGesture(minimumDuration: 0.7)
+                                        .onEnded { _ in
+                                            keyToRename = key
+                                            newName = key
+                                            showRenameAlert = true
+                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        }
+                                )
+
+                                Spacer()
+
+                                let isPaused = entry.isPaused ?? false
+                                Text(viewModel.timeStringEntries(for: entry, isPaused: isPaused))
                                     .font(.system(size: 15, weight: .bold, design: .monospaced))
-                                    .foregroundColor(.blue)
+
+
+                                resetButton(for: key)
+                                removeButton(for: key)
                             }
-                            .buttonStyle(.plain)
-                            .simultaneousGesture(
-                                LongPressGesture(minimumDuration: 0.7)
-                                    .onEnded { _ in
-                                        keyToRename = key
-                                        newName = key
-                                        showRenameAlert = true
-                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                    }
-                            )
-                            let isPaused = timeEntriesMap[key]?.isPaused ?? false
-                            Text(viewModel.timeStringEntries(for: viewModel.timeEntriesMap[key]!, isPaused: isPaused))
-                                .font(.system(size: 15, weight: .bold, design: .monospaced))
-                            resetButton(for: key)
-                            removeButton(for: key)
+                            .contentShape(Rectangle())
                         }
-                        .contentShape(Rectangle())
                     }
                 }
                 .onChange(of: viewModel.timeEntriesMap) { _ in
@@ -100,6 +107,10 @@ struct ContentView: View {
                 EntryView(viewModel: viewModel)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .alert("Upgrade to Pro", isPresented: $showUpgradeAlert) {
+                Button("Purchase Pro") { viewModel.purchaseProVersion() }
+                Button("Cancel", role: .cancel) {}
+            }
             .background(
                 Group {
                     if let uiImage = viewModel.customBackgroundImage {
@@ -127,6 +138,7 @@ struct ContentView: View {
     @State private var selectedKey = ""
     @State private var userReason = ""
     @State private var showErrorAlert = false
+    @State private var showUpgradeAlert = false
 
     
     // resetButton defines the view for the reset button.

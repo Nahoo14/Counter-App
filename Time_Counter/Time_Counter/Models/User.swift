@@ -8,7 +8,23 @@
 import SwiftUI
 
 // Model for each timer entry
+enum CounterType: String, Codable, CaseIterable {
+    case timer
+
+    var displayName: String {
+        switch self {
+        case .timer: return "Timer Counter"
+        }
+    }
+    var description: String {
+        switch self {
+        case .timer: return "Track time-based streaks automatically."
+        }
+    }
+}
+
 struct TimerEntry : Codable, Equatable{
+    var type: CounterType
     let title: String
     var startTime: Date 
     var rules: String?
