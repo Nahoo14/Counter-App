@@ -215,7 +215,7 @@ class UserViewModel: ObservableObject {
             for (idx, time) in times.enumerated() {
                 let content = UNMutableNotificationContent()
                 content.title = "Daily Check"
-                content.body = "Time to check your streaks — tap to mark today's check-in."
+                content.body = "Time to check on your streaks."
                 content.sound = .default
                 var dateComponents = Calendar.current.dateComponents([.hour, .minute], from: time)
                 dateComponents.second = 0

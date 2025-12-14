@@ -15,7 +15,6 @@ struct SettingsView: View {
     @State private var showingNotificationSheet: Bool = false
     
     var body: some View {
-        let proFeatures = ["Custom backgrounds"]
         List {
             Section("Light Mode") {
                 Picker("Mode", selection: $viewModel.selectedTheme) {
@@ -37,7 +36,7 @@ struct SettingsView: View {
                     }
                 }) {
                     HStack {
-                        Text("Custom backgrounds")
+                        Text("Custom background")
                         Spacer()
                         Image(systemName: viewModel.hasProPurchased ? "photo.fill" : "lock.fill")
                             .foregroundColor(viewModel.hasProPurchased ? .blue : .secondary)

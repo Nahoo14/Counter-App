@@ -25,7 +25,7 @@ struct rulesView : View {
             CustomTextEditor(text: $rules)
                 .padding([.leading, .trailing], 8)
                 .background(
-                    Color(UIColor.systemGray6) // Adaptive background color
+                    Color(UIColor.systemGray6)
                 )
                 .cornerRadius(8)
             Spacer()
