@@ -11,7 +11,6 @@ struct SettingsView: View {
     @ObservedObject var viewModel: UserViewModel
     @State private var showImagePicker = false
     @State private var selectedUIImage: UIImage? = nil
-    @State private var bypassCode: String = ""
     @State private var showingNotificationSheet: Bool = false
     
     var body: some View {
@@ -25,7 +24,7 @@ struct SettingsView: View {
                 .labelsHidden()
                 .pickerStyle(.inline)
             }
-
+            
             Section("Pro Upgrade") {
                 // Custom Backgrounds row
                 Button(action: {
@@ -42,7 +41,7 @@ struct SettingsView: View {
                             .foregroundColor(viewModel.hasProPurchased ? .blue : .secondary)
                     }
                 }
-
+                
                 // Daily Reminders row
                 Button(action: {
                     if viewModel.hasProPurchased {
@@ -69,7 +68,7 @@ struct SettingsView: View {
                         })) {
                             Text("Enable Daily Reminders")
                         }
-
+                        
                         // Existing reminder times
                         VStack(alignment: .leading) {
                             Text("Reminder times")
@@ -79,23 +78,35 @@ struct SettingsView: View {
                                 Text("No reminder times set")
                                     .foregroundColor(.secondary)
                             } else {
-                                ForEach(Array(viewModel.notificationTimes.enumerated()), id: \.offset) { idx, time in
+                                let sortedTimes = viewModel.notificationTimes.sorted { t1, t2 in
+                                    let c1 = Calendar.current.dateComponents([.hour, .minute], from: t1)
+                                    let c2 = Calendar.current.dateComponents([.hour, .minute], from: t2)
+                                    if c1.hour != c2.hour { return (c1.hour ?? 0) < (c2.hour ?? 0) }
+                                    return (c1.minute ?? 0) < (c2.minute ?? 0)
+                                }
+                                ForEach(Array(sortedTimes.enumerated()), id: \.offset) { idx, time in
                                     HStack {
                                         Text(DateFormatter.localizedString(from: time, dateStyle: .none, timeStyle: .short))
                                         Spacer()
-                                            Button(role: .destructive) {
-                                                viewModel.notificationTimes.remove(at: idx)
+                                        Button(role: .destructive) {
+                                            if let originalIndex = viewModel.notificationTimes.firstIndex(where: { comps in
+                                                let c = Calendar.current.dateComponents([.hour, .minute], from: comps)
+                                                let ct = Calendar.current.dateComponents([.hour, .minute], from: time)
+                                                return c.hour == ct.hour && c.minute == ct.minute
+                                            }) {
+                                                viewModel.notificationTimes.remove(at: originalIndex)
                                                 if viewModel.notificationsEnabled {
                                                     viewModel.rescheduleNotificationsIfEnabled()
                                                 }
-                                            } label: {
-                                                Image(systemName: "trash")
                                             }
+                                        } label: {
+                                            Image(systemName: "trash")
+                                        }
                                     }
                                 }
                             }
                         }
-
+                        
                         // Add new time
                         DatePicker("", selection: $viewModel.notificationTime, displayedComponents: .hourAndMinute)
                             .datePickerStyle(WheelDatePickerStyle())
@@ -114,7 +125,7 @@ struct SettingsView: View {
                                 }
                             }
                         }
-
+                        
                         Spacer()
                         Button("Done") { showingNotificationSheet = false }
                     }
@@ -127,18 +138,7 @@ struct SettingsView: View {
                         }), secondaryButton: .cancel())
                     }
                 }
-
-                HStack {
-                    TextField("Test unlock code", text: $bypassCode)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    Button("Apply Code") {
-                        if bypassCode == "TEST-UNLOCK-2025" {
-                            viewModel.hasProPurchased = true
-                        }
-                        bypassCode = ""
-                    }
-                }
-
+                
                 // Purchase/Restore actions
                 if !viewModel.hasProPurchased {
                     Button {
@@ -146,26 +146,29 @@ struct SettingsView: View {
                     } label: {
                         Text("Purchase Pro \(viewModel.availableProducts.first?.displayPrice ?? "$0.99")")
                     }
-                    Button("Restore Purchases") {
-                        viewModel.restorePurchases()
+                    Button(action: { viewModel.restorePurchases() }) {
+                        if viewModel.isRestoring {
+                            HStack { ProgressView().scaleEffect(0.8); Text("Restoring...") }
+                        } else {
+                            Text("Restore Purchases")
+                        }
                     }
-                } else {
-                    Button("Remove Purchase (Test)") { viewModel.hasProPurchased = false }
+                    .disabled(viewModel.isRestoring)
                 }
             }
-        }
-        .listStyle(InsetGroupedListStyle())
-        .navigationTitle("Settings")
-        .sheet(isPresented: $showImagePicker, onDismiss: {
-            if let img = selectedUIImage {
-                viewModel.saveCustomBackgroundImage(img)
-                selectedUIImage = nil
+            .listStyle(InsetGroupedListStyle())
+            .navigationTitle("Settings")
+            .sheet(isPresented: $showImagePicker, onDismiss: {
+                if let img = selectedUIImage {
+                    viewModel.saveCustomBackgroundImage(img)
+                    selectedUIImage = nil
+                }
+            }) {
+                ImagePicker(selectedImage: $selectedUIImage)
             }
-        }) {
-            ImagePicker(selectedImage: $selectedUIImage)
-        }
-        .task {
-            await viewModel.fetchProducts()
+            .task {
+                await viewModel.fetchProducts()
+            }
         }
     }
 }

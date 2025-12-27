@@ -73,6 +73,7 @@ class UserViewModel: ObservableObject {
     @Published var hasProPurchased: Bool = false {
         didSet { UserDefaults.standard.set(hasProPurchased, forKey: "has_pro_purchase") }
     }
+    @Published var isRestoring: Bool = false
 
     // Notification permissions and scheduling
     @Published var notificationsAuthorized: Bool = false
@@ -326,21 +327,29 @@ class UserViewModel: ObservableObject {
     func restorePurchases() {
         Task { [weak self] in
             guard let self = self else { return }
+            DispatchQueue.main.async { self.isRestoring = true }
             do {
-                for await verification in Transaction.currentEntitlements {
+                // Ask the App Store to re-send transactions to refresh entitlements
+                try? await AppStore.sync()
+                var found = false
+                for try await verification in Transaction.currentEntitlements {
                     switch verification {
                     case .verified(let transaction):
                         if transaction.productID == productIDs.first {
-                            DispatchQueue.main.async { [weak self] in self?.hasProPurchased = true }
+                            found = true
+                            DispatchQueue.main.async { self.hasProPurchased = true }
                         }
                     case .unverified(let transaction, let error):
-                        // Unverified transactions are ignored for entitlement granting, but log for debugging
                         print("Unverified transaction for \(transaction.productID): \(error)")
                     }
+                }
+                if !found {
+                    // No current entitlement found; do not alter hasProPurchased here (keeps any local state)
                 }
             } catch {
                 print("Restore failed: \(error)")
             }
+            DispatchQueue.main.async { self.isRestoring = false }
         }
     }
 
